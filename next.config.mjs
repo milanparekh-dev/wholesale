@@ -20,7 +20,7 @@ const nextConfig = async () => {
         {
           source: "/api/:path*",
           destination:
-            "https://phplaravel-1533788-5916744.cloudwaysapps.com/:path*",
+            "https://phplaravel-1533788-6146601.cloudwaysapps.com/:path*",
         },
         
       ];

@@ -36,7 +36,7 @@ const buildIndexFile = (chunkFiles) => {
 async function fetchProducts() {
   try {
     console.log('Fetching products...');
-    const res = await axios.get('https://phplaravel-1533788-5916744.cloudwaysapps.com/api/get_products/?per_page=-1');
+    const res = await axios.get('https://phplaravel-1533788-6146601.cloudwaysapps.com/api/get_products/?per_page=-1');
     // Try to locate the products array in the response
     let data = [];
     if (Array.isArray(res.data)) {
