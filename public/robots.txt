@@ -1,0 +1,16 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Sitemap: https://agorareal.com/sitemap.xml
+
+
+# Allow AI search crawlers
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: PerplexityBot
+User-agent: ClaudeBot
+Allow: /
+
+# Allow user-triggered agents
+User-agent: ChatGPT-User
+User-agent: Perplexity-User
+Allow: /

@@ -1,0 +1,9 @@
+# local env
+.env.local
+.env
+node_modules/
+.env
+dist/
+build/
+.next/
+.git/

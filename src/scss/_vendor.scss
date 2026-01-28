@@ -1,0 +1,119 @@
+
+.vendor-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 8, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1300;
+}
+
+.vendor-popup {
+  width: 520px;
+  background: var(--surface-elevated);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 20px;
+  animation: popup-appear 0.25s ease;
+  color: var(--text-primary);
+}
+
+@keyframes popup-appear {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.vendor-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.vendor-popup-header .vendor-title {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+}
+
+.vendor-list {
+  max-height: 350px;
+  overflow-y: auto;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.vendor-item {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vendor-item:hover {
+  background: var(--surface-elevated);
+  border-color: var(--accent);
+}
+
+.vendor-item.selected {
+  border-color: var(--accent);
+  background: rgba(138, 180, 248, 0.12);
+}
+
+.vendor-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vendor-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.qty-input {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.vendor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cancel-btn {
+  text-transform: none !important;
+  color: var(--text-secondary) !important;
+}
+
+.cancel-btn:hover {
+  background: var(--surface-muted) !important;
+}
