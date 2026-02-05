@@ -86,12 +86,12 @@ export default function AdminLayout({ children }) {
   };
 
   const menuItems = [
-    { label: "Product", icon: <Storefront />, path: "/admin/product" },
-    { label: "Brand", icon: <Inventory2 />, path: "/admin/brand" },
-    { label: "Category", icon: <Category />, path: "/admin/category" },
+    // { label: "Product", icon: <Storefront />, path: "/admin/product" },
+    // { label: "Brand", icon: <Inventory2 />, path: "/admin/brand" },
+    // { label: "Category", icon: <Category />, path: "/admin/category" },
     { label: "Buyer", icon: <ShoppingCart />, path: "/admin/buyer" },
-    { label: "Vendor", icon: <People />, path: "/admin/vendor" },
-    { label: "Quotes", icon: <RequestQuote />, path: "/admin/quotes" },
+    // { label: "Vendor", icon: <People />, path: "/admin/vendor" },
+    // { label: "Quotes", icon: <RequestQuote />, path: "/admin/quotes" },
   ];
 
   return (

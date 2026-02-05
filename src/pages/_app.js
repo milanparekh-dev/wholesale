@@ -5,13 +5,16 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../scss/main.scss";
 import { darkTheme } from "../theme";
+import AuthGuard from "../components/AuthGuard";
 
 export default function App({ Component, pageProps }) {
   return (
     <Provider store={store}>
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
-        <Component {...pageProps} />
+        <AuthGuard>
+          <Component {...pageProps} />
+        </AuthGuard>
         <ToastContainer
           position="top-right"
           autoClose={3000}

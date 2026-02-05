@@ -1,14 +1,3 @@
-export async function getServerSideProps() {
-  return {
-    redirect: { destination: "/products", permanent: false },
-  };
-}
-
-export default function AdminProductRemoved() {
-  return null;
-}
-
-/* REMOVED: legacy admin product page (auth/session disabled)
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -29,6 +18,8 @@ import {
   FormControl,
   Dialog,
   DialogContent,
+  DialogActions,
+  DialogTitle,
   useTheme,
 } from "@mui/material";
 
@@ -38,6 +29,8 @@ import { toast } from "react-toastify";
 import AdminLayout from "/src/components/AdminLayout";
 import FilterDropdown from "/src/components/FilterDropdown";
 import ThickCircleLoader from "/src/components/Loading";
+import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
+import { DEFAULT_PRODUCT_IMAGE } from "/src/utility/constants";
 
 export default function Home() {
   const [search, setSearch] = useState("");
@@ -54,22 +47,16 @@ export default function Home() {
   const [addProductPopup, setAddProductPopup] = useState(false);
   const [vendorPopup, setVendorPopup] = useState(null);
   const [enlargeImg, setEnlargeImg] = useState(null);
+  const [importPopup, setImportPopup] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importing, setImporting] = useState(false);
   const theme = useTheme();
-
-  // const fetchBrands = async () => {
-  //   try {
-  //     const res = await adminApi.get("/api/get_brands/");
-  //     setBrands(res.data.sort());
-  //   } catch {
-  //     toast.error("Failed to fetch brands");
-  //   }
-  // };
 
   const fetchCategoryList = async () => {
     try {
       const res = await adminApi.get("/api/categories/");
       setCategoryList(res.data || []);
-    } catch {}
+    } catch { }
   };
 
   const fetchBrandsList = async () => {
@@ -79,7 +66,7 @@ export default function Home() {
 
       const brandNames = res.data.map((b) => b.name);
       setBrands(brandNames.sort());
-    } catch {}
+    } catch { }
   };
 
   const fetchVendors = async () => {
@@ -143,7 +130,7 @@ export default function Home() {
     const timer = setTimeout(() => {
       fetchProducts();
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, [page, rowsPerPage, search, selectedBrands, fetchProducts]);
 
@@ -153,6 +140,39 @@ export default function Home() {
     reloadProducts();
   };
 
+  const handleImportSubmit = async () => {
+    if (!importFile) {
+      toast.error("Please select an .xlsx file");
+      return;
+    }
+
+    const ext = (importFile.name || "").toLowerCase().split(".").pop();
+    if (ext !== "xlsx") {
+      toast.error("Only .xlsx files are accepted");
+      return;
+    }
+
+    try {
+      setImporting(true);
+      const formData = new FormData();
+      formData.append("file", importFile);
+
+      const res = await adminApi.post("/api/admin/products/import-excel", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      toast.success(res?.data?.message || "Import submitted");
+      setImportPopup(false);
+      setImportFile(null);
+      setPage(1);
+      fetchProducts();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Import failed");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <AdminLayout>
       <Box
@@ -160,6 +180,7 @@ export default function Home() {
           background: theme.palette.background.default,
           minHeight: "100vh",
           p: 2,
+          pt: 0,
           color: theme.palette.text.primary,
         }}
       >
@@ -170,10 +191,10 @@ export default function Home() {
             gap: 2,
             alignItems: "center",
             flexWrap: "wrap",
-            mb: 3,
-            p: 1.5,
+            mb: 2,
+            p: "5px 10px",
             background: theme.palette.background.paper,
-            borderRadius: "12px",
+            borderRadius: "4px",
             border: `1px solid ${theme.palette.divider}`,
             boxShadow: "0px 12px 30px rgba(4,6,8,0.55)",
           }}
@@ -228,6 +249,24 @@ export default function Home() {
           </Button>
 
           <Button
+            variant="outlined"
+            sx={{
+              color: theme.palette.primary.main,
+              borderColor: theme.palette.primary.main,
+              boxShadow: "none",
+              textTransform: "none",
+              "&:hover": {
+                borderColor: theme.palette.primary.light,
+                color: theme.palette.primary.light,
+                boxShadow: "none",
+              },
+            }}
+            onClick={() => setImportPopup(true)}
+          >
+            Import Excel (.xlsx)
+          </Button>
+
+          <Button
             variant="contained"
             sx={{
               background: theme.palette.primary.main,
@@ -249,7 +288,7 @@ export default function Home() {
             component={Paper}
             sx={{
               background: theme.palette.background.paper,
-              borderRadius: "12px",
+              borderRadius: "4px",
               border: `1px solid ${theme.palette.divider}`,
               boxShadow: "0px 12px 30px rgba(4,6,8,0.55)",
             }}
@@ -271,7 +310,7 @@ export default function Home() {
                         color: theme.palette.text.secondary,
                         background: theme.palette.background.subtle,
                         fontWeight: 600,
-                        padding: "6px 12px",
+                        padding: "2px 12px",
                       }}
                     >
                       {h}
@@ -286,14 +325,13 @@ export default function Home() {
                     key={p.upc}
                     sx={{ "&:hover": { background: "rgba(138, 180, 248, 0.08)" } }}
                   >
-                    <TableCell sx={{ padding: "4px 8px" }}>
+                    <TableCell sx={{ padding: "2px 8px" }}>
                       <img
                         src={
-                          p.image ||
-                          "https://res.cloudinary.com/dbxjpuupy/image/upload/v1765398958/Gemini_Generated_Image_fspkkgfspkkgfspk_se19ha.png"
+                          p.image || DEFAULT_PRODUCT_IMAGE
                         }
-                        width={45}
-                        height={45}
+                        width={35}
+                        height={35}
                         style={{
                           borderRadius: 4,
                           objectFit: "cover",
@@ -302,16 +340,16 @@ export default function Home() {
                         onClick={() => setEnlargeImg(p.image)}
                       />
                     </TableCell>
-                    <TableCell sx={{ color: theme.palette.text.primary, padding: "4px 8px" }}>
+                    <TableCell sx={{ color: theme.palette.text.primary, padding: "2px 8px" }}>
                       {p.brand}
                     </TableCell>
-                    <TableCell sx={{ color: theme.palette.text.primary, padding: "4px 8px" }}>
+                    <TableCell sx={{ color: theme.palette.text.primary, padding: "2px 8px" }}>
                       {p.title}
                     </TableCell>
-                    <TableCell sx={{ color: theme.palette.text.secondary, padding: "4px 8px" }}>
+                    <TableCell sx={{ color: theme.palette.text.secondary, padding: "2px 8px" }}>
                       {p.category}
                     </TableCell>
-                    <TableCell sx={{ color: theme.palette.text.secondary, padding: "4px 8px" }}>
+                    <TableCell sx={{ color: theme.palette.text.secondary, padding: "2px 8px" }}>
                       {p.gender}
                     </TableCell>
                     <TableCell sx={{ padding: "4px 8px" }}>
@@ -408,6 +446,65 @@ export default function Home() {
           </DialogContent>
         </Dialog>
 
+        <Dialog open={importPopup} onClose={() => { setImportPopup(false); setImportFile(null); }}>
+          <DialogTitle>Import products from Excel</DialogTitle>
+          <DialogContent
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              minWidth: 340,
+            }}
+          >
+            <Box
+              sx={{
+                p: 2,
+                border: `1px dashed ${theme.palette.divider}`,
+                borderRadius: 4,
+                background: theme.palette.background.subtle,
+              }}
+            >
+              <input
+                type="file"
+                accept=".xlsx"
+                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                style={{ width: "100%" }}
+              />
+              <Box sx={{ mt: 1, color: theme.palette.text.secondary, fontSize: 14 }}>
+                Only .xlsx files are allowed. Please use the NYPX_clean.xlsx format; validation is handled by the backend.
+              </Box>
+              {importFile && (
+                <Box sx={{ mt: 1, fontSize: 14 }}>
+                  Selected: {importFile.name}
+                </Box>
+              )}
+            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<CloudDownloadIcon />}
+              component="a"
+              href="/xlsx/NYPX_clean.xlsx"
+              download
+              sx={{ textTransform: "none", alignSelf: "flex-start" }}
+            >
+              Download sample (NYPX_clean.xlsx)
+            </Button>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={() => { setImportPopup(false); setImportFile(null); }} sx={{ textTransform: "none" }}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleImportSubmit}
+              disabled={importing}
+              sx={{ textTransform: "none" }}
+            >
+              {importing ? "Uploading..." : "Upload"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* EDIT / ADD PRODUCT */}
         {addProductPopup && (
           <ProductEditPopUp
@@ -425,5 +522,3 @@ export default function Home() {
     </AdminLayout>
   );
 }
-
-*/

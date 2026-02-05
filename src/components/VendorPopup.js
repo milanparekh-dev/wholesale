@@ -1,8 +1,10 @@
 import { useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../store/cartSlice";
+import { getMembershipPrice } from "../utility/pricing";
+import { DEFAULT_PRODUCT_IMAGE } from "../utility/constants";
 import {
   Paper,
   Typography,
@@ -18,22 +20,26 @@ import {
   TextField,
   useMediaQuery,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 
 export default function VendorPopup({ product, close }) {
   const dispatch = useDispatch();
+  const membershipLevel = useSelector((state) => state.auth.membership_level);
   const router = useRouter();
   const [selectedQty, setSelectedQty] = useState("1");
   const isMobile = useMediaQuery("(max-width:600px)");
   const [enlargeImg, setEnlargeImg] = useState(false);
   const theme = useTheme();
+  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [loadingQuote, setLoadingQuote] = useState(false);
 
   const availableVendors = product.vendors || [];
   const totalQty = availableVendors.reduce((sum, v) => sum + (Number(v.qty) || 0), 0);
   const lowestPrice = Math.min(
-    ...availableVendors.map((v) => Number(v.price) || 0)
+    ...availableVendors.map((v) => getMembershipPrice(v, membershipLevel))
   );
 
   const handleQtyBlur = () => {
@@ -44,9 +50,11 @@ export default function VendorPopup({ product, close }) {
   };
 
   const handleAddToCart = () => {
+    setLoadingAdd(true);
     const numQty = parseInt(selectedQty);
     if (numQty > totalQty) {
       alert(`Only ${totalQty} available`);
+      setLoadingAdd(false);
       return;
     }
 
@@ -68,6 +76,7 @@ export default function VendorPopup({ product, close }) {
       })
     );
     toast.success("Added to cart");
+    setLoadingAdd(false);
   };
 
   return (
@@ -110,7 +119,7 @@ export default function VendorPopup({ product, close }) {
           }}
         >
           <img
-            src={product.image || "https://via.placeholder.com/120"}
+            src={product.image || DEFAULT_PRODUCT_IMAGE}
             alt={product.title}
             style={{
               width: isMobile ? 140 : 120,
@@ -226,6 +235,7 @@ export default function VendorPopup({ product, close }) {
                       variant="contained"
                       size="small"
                       onClick={handleAddToCart}
+                      disabled={loadingAdd}
                       sx={{
                         textTransform: "none",
                         background: theme.palette.primary.main,
@@ -233,7 +243,7 @@ export default function VendorPopup({ product, close }) {
                         "&:hover": { background: theme.palette.primary.light },
                       }}
                     >
-                      Add
+                      {loadingAdd ? <CircularProgress size={16} color="inherit" /> : "Add"}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -282,6 +292,7 @@ export default function VendorPopup({ product, close }) {
               fullWidth
               variant="contained"
               onClick={handleAddToCart}
+              disabled={loadingAdd}
               sx={{
                 background: theme.palette.primary.main,
                 textTransform: "none",
@@ -290,7 +301,7 @@ export default function VendorPopup({ product, close }) {
                 "&:hover": { background: theme.palette.primary.light },
               }}
             >
-              Add to Cart
+              {loadingAdd ? <CircularProgress size={16} color="inherit" /> : "Add to Cart"}
             </Button>
           </Box>
         )}
@@ -315,9 +326,12 @@ export default function VendorPopup({ product, close }) {
 
           <Button
             onClick={() => {
+              setLoadingQuote(true);
               handleAddToCart();
+              setLoadingQuote(false);
               router.push("/cart");
             }}
+            disabled={loadingQuote}
             sx={{
               background: theme.palette.secondary.main,
               color: theme.palette.background.default,
@@ -326,7 +340,7 @@ export default function VendorPopup({ product, close }) {
               "&:hover": { background: theme.palette.secondary.light },
             }}
           >
-            Request Quote
+            {loadingQuote ? <CircularProgress size={16} color="inherit" /> : "Request Quote"}
           </Button>
         </Box>
 

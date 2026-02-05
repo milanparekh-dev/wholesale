@@ -1,14 +1,3 @@
-export async function getServerSideProps() {
-  return {
-    redirect: { destination: "/products", permanent: false },
-  };
-}
-
-export default function AdminBrandRemoved() {
-  return null;
-}
-
-/* REMOVED: legacy admin brand page (auth/session disabled)
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -118,19 +107,25 @@ export default function Home() {
   const sortBrands = (data) => {
     if (!sortBy) return data;
     const sorted = [...data].sort((a, b) => {
-      if (sortBy === "created_asc") return new Date(a.created_at) - new Date(b.created_at);
-      if (sortBy === "created_desc") return new Date(b.created_at) - new Date(a.created_at);
-      if (sortBy === "updated_asc") return new Date(a.updated_at) - new Date(b.updated_at);
-      if (sortBy === "updated_desc") return new Date(b.updated_at) - new Date(a.updated_at);
+      if (sortBy === "created_asc")
+        return new Date(a.created_at) - new Date(b.created_at);
+      if (sortBy === "created_desc")
+        return new Date(b.created_at) - new Date(a.created_at);
+      if (sortBy === "updated_asc")
+        return new Date(a.updated_at) - new Date(b.updated_at);
+      if (sortBy === "updated_desc")
+        return new Date(b.updated_at) - new Date(a.updated_at);
       return 0;
     });
     return sorted;
   };
 
-  useEffect(() => { fetchBrands(); }, []);
+  useEffect(() => {
+    fetchBrands();
+  }, []);
 
   const filteredBrands = sortBrands(
-    brands.filter((b) => b?.name?.toLowerCase().includes(search.toLowerCase()))
+    brands.filter((b) => b?.name?.toLowerCase().includes(search.toLowerCase())),
   );
 
   return (
@@ -148,8 +143,8 @@ export default function Home() {
             display: "flex",
             gap: 2,
             flexWrap: "wrap",
-            mb: 3,
-            p: 2,
+            mb: 2,
+            p: "5px 10px",
             borderRadius: "4px",
             background: theme.palette.background.paper,
             justifyContent: "space-between",
@@ -168,7 +163,9 @@ export default function Home() {
                 "& .MuiOutlinedInput-root": {
                   background: theme.palette.background.subtle,
                   borderRadius: "8px",
-                  "& fieldset": { border: `1px solid ${theme.palette.divider}` },
+                  "& fieldset": {
+                    border: `1px solid ${theme.palette.divider}`,
+                  },
                   color: theme.palette.text.primary,
                   "&:hover fieldset": {
                     border: `1px solid ${theme.palette.primary.main}`,
@@ -177,7 +174,9 @@ export default function Home() {
                     border: `1px solid ${theme.palette.primary.main}`,
                   },
                 },
-                "& .MuiInputLabel-root": { color: theme.palette.text.secondary },
+                "& .MuiInputLabel-root": {
+                  color: theme.palette.text.secondary,
+                },
                 "& .MuiInputLabel-root.Mui-focused": {
                   color: theme.palette.primary.main,
                 },
@@ -192,7 +191,9 @@ export default function Home() {
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "8px",
                   background: theme.palette.background.subtle,
-                  "& fieldset": { border: `1px solid ${theme.palette.divider}` },
+                  "& fieldset": {
+                    border: `1px solid ${theme.palette.divider}`,
+                  },
                   "&:hover fieldset": {
                     border: `1px solid ${theme.palette.primary.main}`,
                   },
@@ -211,17 +212,28 @@ export default function Home() {
                 sx={{ color: theme.palette.text.primary }}
               >
                 <MenuItem value="">None</MenuItem>
-                <MenuItem value="created_asc">Created On (Earliest First)</MenuItem>
-                <MenuItem value="created_desc">Created On (Latest First)</MenuItem>
-                <MenuItem value="updated_asc">Updated On (Earliest First)</MenuItem>
-                <MenuItem value="updated_desc">Updated On (Latest First)</MenuItem>
+                <MenuItem value="created_asc">
+                  Created On (Earliest First)
+                </MenuItem>
+                <MenuItem value="created_desc">
+                  Created On (Latest First)
+                </MenuItem>
+                <MenuItem value="updated_asc">
+                  Updated On (Earliest First)
+                </MenuItem>
+                <MenuItem value="updated_desc">
+                  Updated On (Latest First)
+                </MenuItem>
               </Select>
             </FormControl>
           </Box>
 
           <Button
             variant="contained"
-            onClick={() => { setVendorPopup(null); setCategoryPopup(true); }}
+            onClick={() => {
+              setVendorPopup(null);
+              setCategoryPopup(true);
+            }}
             sx={{
               background: theme.palette.primary.main,
               color: theme.palette.primary.contrastText,
@@ -255,14 +267,19 @@ export default function Home() {
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
-                      {["Category Name", "Created On", "Updated On", "Action"].map((h) => (
+                      {[
+                        "Category Name",
+                        "Created On",
+                        "Updated On",
+                        "Action",
+                      ].map((h) => (
                         <TableCell
                           key={h}
                           sx={{
                             color: theme.palette.text.primary,
                             background: theme.palette.background.elevated,
                             fontWeight: 600,
-                            padding: "6px 12px",
+                            padding: "2px 12px",
                             borderBottom: `1px solid ${theme.palette.divider}`,
                           }}
                         >
@@ -282,25 +299,31 @@ export default function Home() {
                           },
                         }}
                       >
-                        <TableCell sx={{ padding: "4px 8px" }}>
-                          <Typography sx={{ color: theme.palette.text.primary }}>
+                        <TableCell sx={{ padding: "2px 8px" }}>
+                          <Typography
+                            sx={{ color: theme.palette.text.primary }}
+                          >
                             {b?.name || "No Brand Name"}
                           </Typography>
                         </TableCell>
 
-                        <TableCell sx={{ padding: "4px 8px" }}>
-                          <Typography sx={{ color: theme.palette.text.secondary }}>
+                        <TableCell sx={{ padding: "2px 8px" }}>
+                          <Typography
+                            sx={{ color: theme.palette.text.secondary }}
+                          >
                             {dayjs(b?.created_at).format("DD MMM YYYY hh:mm A")}
                           </Typography>
                         </TableCell>
 
-                        <TableCell sx={{ padding: "4px 8px" }}>
-                          <Typography sx={{ color: theme.palette.text.secondary }}>
+                        <TableCell sx={{ padding: "2px 8px" }}>
+                          <Typography
+                            sx={{ color: theme.palette.text.secondary }}
+                          >
                             {dayjs(b?.updated_at).format("DD MMM YYYY hh:mm A")}
                           </Typography>
                         </TableCell>
 
-                        <TableCell sx={{ padding: "4px 8px" }}>
+                        <TableCell sx={{ padding: "2px 8px" }}>
                           <Button
                             size="small"
                             onClick={(e) => handleMenuClick(e, b)}
@@ -330,7 +353,11 @@ export default function Home() {
                             }}
                           >
                             <MenuItem
-                              onClick={() => { handleMenuClose(); setVendorPopup(b); setCategoryPopup(true); }}
+                              onClick={() => {
+                                handleMenuClose();
+                                setVendorPopup(b);
+                                setCategoryPopup(true);
+                              }}
                               sx={{
                                 color: theme.palette.primary.main,
                                 display: "flex",
@@ -341,7 +368,10 @@ export default function Home() {
                             </MenuItem>
 
                             <MenuItem
-                              onClick={() => { handleMenuClose(); deleteBrand(b?._id); }}
+                              onClick={() => {
+                                handleMenuClose();
+                                deleteBrand(b?._id);
+                              }}
                               sx={{
                                 color: theme.palette.error.main,
                                 display: "flex",
@@ -372,14 +402,31 @@ export default function Home() {
                         boxShadow: "0 14px 36px rgba(4,6,8,0.45)",
                       }}
                     >
-                      <Typography sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
+                      <Typography
+                        sx={{
+                          color: theme.palette.text.primary,
+                          fontWeight: 600,
+                        }}
+                      >
                         {b?.name}
                       </Typography>
-                      <Typography sx={{ color: theme.palette.text.secondary, fontSize: "12px" }}>
-                        Created: {dayjs(b?.created_at).format("DD MMM YYYY hh:mm A")}
+                      <Typography
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: "12px",
+                        }}
+                      >
+                        Created:{" "}
+                        {dayjs(b?.created_at).format("DD MMM YYYY hh:mm A")}
                       </Typography>
-                      <Typography sx={{ color: theme.palette.text.secondary, fontSize: "12px" }}>
-                        Updated: {dayjs(b?.updated_at).format("DD MMM YYYY hh:mm A")}
+                      <Typography
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: "12px",
+                        }}
+                      >
+                        Updated:{" "}
+                        {dayjs(b?.updated_at).format("DD MMM YYYY hh:mm A")}
                       </Typography>
 
                       <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
@@ -391,7 +438,10 @@ export default function Home() {
                             fontSize: "12px",
                             color: theme.palette.primary.main,
                           }}
-                          onClick={() => { setVendorPopup(b); setCategoryPopup(true); }}
+                          onClick={() => {
+                            setVendorPopup(b);
+                            setCategoryPopup(true);
+                          }}
                         >
                           Edit <EditIcon sx={{ fontSize: 14 }} />
                         </Button>
@@ -419,12 +469,14 @@ export default function Home() {
         {categoryPopup && (
           <BrandEditPopUp
             product={vendorPopup}
-            close={() => { setVendorPopup(null); setCategoryPopup(false); fetchBrands(); }}
+            close={() => {
+              setVendorPopup(null);
+              setCategoryPopup(false);
+              fetchBrands();
+            }}
           />
         )}
       </Box>
     </AdminLayout>
   );
 }
-
-*/

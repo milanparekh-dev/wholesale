@@ -1,14 +1,3 @@
-export async function getServerSideProps() {
-  return {
-    redirect: { destination: "/products", permanent: false },
-  };
-}
-
-export default function AdminRemoved() {
-  return null;
-}
-
-/* REMOVED: legacy admin page (auth/session disabled)
 "use client";
 
 import React, { useState } from "react";
@@ -66,7 +55,7 @@ export default function HomePage() {
                 fontWeight: 700,
               }}
             >
-              Welcome to Wholesale Leville Inc.
+              Welcome to Beauté Leville Inc.
             </Typography>
             <Typography
               sx={{
@@ -84,5 +73,3 @@ export default function HomePage() {
     </AdminLayout>
   );
 }
-
-*/

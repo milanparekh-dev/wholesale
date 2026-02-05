@@ -1,14 +1,3 @@
-export async function getServerSideProps() {
-  return {
-    redirect: { destination: "/products", permanent: false },
-  };
-}
-
-export default function AdminBuyerRemoved() {
-  return null;
-}
-
-/* REMOVED: legacy admin buyer page (auth/session disabled)
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -89,7 +78,9 @@ export default function Home() {
   }, []);
 
   const filteredVendors = sortVendors(
-    vendors.filter((v) => v?.name?.toLowerCase().includes(search.toLowerCase()))
+    vendors.filter((v) =>
+      v?.name?.toLowerCase().includes(search.toLowerCase()),
+    ),
   );
 
   const toggleBan = async (vendor) => {
@@ -142,10 +133,10 @@ export default function Home() {
             gap: 2,
             alignItems: "center",
             flexWrap: "wrap",
-            mb: 3,
-            p: 1.5,
+            mb: 2,
+            p: "5px 10px",
             background: theme.palette.background.paper,
-            borderRadius: "8px",
+            borderRadius: "4px",
             border: `1px solid ${theme.palette.divider}`,
             boxShadow: "0 18px 44px rgba(4,6,8,0.45)",
           }}
@@ -219,7 +210,7 @@ export default function Home() {
             ref={containerRef}
             sx={{
               background: theme.palette.background.paper,
-              borderRadius: "12px",
+              borderRadius: "4px",
               border: `1px solid ${theme.palette.divider}`,
               maxHeight: "80vh",
               overflowY: "auto",
@@ -230,112 +221,142 @@ export default function Home() {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  {["Name", "Email", "Status", "Membership", "Updated On", "Actions"].map(
-                    (h) => (
-                      <TableCell
-                        key={h}
-                        sx={{
-                          color: theme.palette.text.primary,
-                          background: theme.palette.background.elevated,
-                          fontWeight: 600,
-                          padding: "6px 12px",
-                          borderBottom: `1px solid ${theme.palette.divider}`,
-                        }}
-                      >
-                        {h}
-                      </TableCell>
-                    )
-                  )}
+                  {[
+                    "Name",
+                    "Email",
+                    "Status",
+                    "Membership",
+                    "Updated On",
+                    "Actions",
+                  ].map((h) => (
+                    <TableCell
+                      key={h}
+                      sx={{
+                        color: theme.palette.text.primary,
+                        background: theme.palette.background.elevated,
+                        fontWeight: 600,
+                        padding: "2px 12px",
+                        borderBottom: `1px solid ${theme.palette.divider}`,
+                      }}
+                    >
+                      {h}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableHead>
 
               <TableBody>
-                {filteredVendors.map((v) => (
-                  <TableRow
-                    key={v?._id}
-                    sx={{
-                      "&:hover": {
-                        background: theme.palette.background.subtle,
-                      },
-                    }}
-                  >
-                    <TableCell sx={{ padding: "4px 8px" }}>
-                      <Typography sx={{ color: theme.palette.text.primary }}>
-                        {v?.name}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ padding: "4px 8px" }}>
-                      <Typography sx={{ color: theme.palette.text.secondary }}>
-                        {v?.email}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ padding: "4px 8px" }}>
-                      <Typography
-                        sx={{
-                          color:
-                            v?.status === "banned"
-                              ? theme.palette.error.main
-                              : theme.palette.success.main,
-                          textTransform: "capitalize",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {v?.status}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ color: theme.palette.text.secondary, padding: "4px 8px" }}>
-                      {v?.membership_level || "Wholesale"}
-                    </TableCell>
-                    <TableCell sx={{ color: theme.palette.text.secondary, padding: "4px 8px" }}>
-                      {dayjs(v?.updated_at).format("DD MMM YYYY hh:mm A")}
-                    </TableCell>
-                    <TableCell sx={{ padding: "4px 8px" }}>
-                      <Box sx={{ display: "flex", gap: 1 }}>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          onClick={() => toggleBan(v)}
-                          sx={{
-                            background:
-                              v?.status === "banned"
-                                ? theme.palette.success.main
-                                : theme.palette.error.main,
-                            color: theme.palette.primary.contrastText,
-                            textTransform: "none",
-                            "&:hover": {
-                              background:
-                                v?.status === "banned"
-                                  ? theme.palette.success.light
-                                  : theme.palette.error.light,
-                            },
-                          }}
-                        >
-                          {v?.status === "banned" ? "Unban" : "Ban"}
-                        </Button>
-
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() => {
-                            setVendorPopup(v);
-                            setCategoryPopup(true);
-                          }}
-                          sx={{
-                            textTransform: "none",
-                            borderColor: theme.palette.primary.main,
-                            color: theme.palette.primary.main,
-                            "&:hover": {
-                              borderColor: theme.palette.primary.light,
-                              color: theme.palette.primary.light,
-                            },
-                          }}
-                        >
-                          Edit
-                        </Button>
-                      </Box>
+                {filteredVendors.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      sx={{
+                        textAlign: "center",
+                        color: theme.palette.text.secondary,
+                        padding: "20px",
+                      }}
+                    >
+                      No buyer found
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
+                {filteredVendors.length > 0 &&
+                  filteredVendors.map((v) => (
+                    <TableRow
+                      key={v?._id}
+                      sx={{
+                        "&:hover": {
+                          background: theme.palette.background.subtle,
+                        },
+                      }}
+                    >
+                      <TableCell sx={{ padding: "2px 8px" }}>
+                        <Typography sx={{ color: theme.palette.text.primary }}>
+                          {v?.name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ padding: "2px 8px" }}>
+                        <Typography sx={{ color: theme.palette.text.secondary }}>
+                          {v?.email}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ padding: "2px 8px" }}>
+                        <Typography
+                          sx={{
+                            color:
+                              v?.status === "banned"
+                                ? theme.palette.error.main
+                                : theme.palette.success.main,
+                            textTransform: "capitalize",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {v?.status}
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          padding: "2px 8px",
+                        }}
+                      >
+                        {v?.membership_level || "Wholesale"}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          padding: "2px 8px",
+                        }}
+                      >
+                        {dayjs(v?.updated_at).format("DD MMM YYYY hh:mm A")}
+                      </TableCell>
+                      <TableCell sx={{ padding: "2px 8px" }}>
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            onClick={() => toggleBan(v)}
+                            sx={{
+                              background:
+                                v?.status === "banned"
+                                  ? theme.palette.success.main
+                                  : theme.palette.error.main,
+                              color: theme.palette.primary.contrastText,
+                              textTransform: "none",
+                              "&:hover": {
+                                background:
+                                  v?.status === "banned"
+                                    ? theme.palette.success.light
+                                    : theme.palette.error.light,
+                              },
+                            }}
+                          >
+                            {v?.status === "banned" ? "Unban" : "Ban"}
+                          </Button>
+
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={() => {
+                              setVendorPopup(v);
+                              setCategoryPopup(true);
+                            }}
+                            sx={{
+                              textTransform: "none",
+                              borderColor: theme.palette.primary.main,
+                              color: theme.palette.primary.main,
+                              "&:hover": {
+                                borderColor: theme.palette.primary.light,
+                                color: theme.palette.primary.light,
+                              },
+                            }}
+                          >
+                            Edit
+                          </Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -343,41 +364,71 @@ export default function Home() {
           /* MOBILE CARD VIEW */
           <Box sx={{ width: "100%", mt: 2 }}>
             <Box sx={{ maxHeight: "78vh", overflowY: "auto", pb: 2 }}>
-              {filteredVendors.map((v) => (
+            {filteredVendors.length === 0 && (
+              <Typography
+                sx={{
+                  textAlign: "center",
+                  color: theme.palette.text.secondary,
+                  padding: "20px",
+                }}
+              >
+                No buyer found
+              </Typography>
+            )}
+            {filteredVendors.length > 0 &&
+              filteredVendors.map((v) => (
                 <Box
                   key={v?._id}
                   sx={{
-                        background: theme.palette.background.paper,
+                    background: theme.palette.background.paper,
                     padding: 1,
                     mb: 1,
-                        borderRadius: "8px",
-                        border: `1px solid ${theme.palette.divider}`,
-                        boxShadow: "0 14px 32px rgba(4,6,8,0.45)",
+                    borderRadius: "8px",
+                    border: `1px solid ${theme.palette.divider}`,
+                    boxShadow: "0 14px 32px rgba(4,6,8,0.45)",
                   }}
                 >
-                      <Typography sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
+                  <Typography
+                    sx={{ color: theme.palette.text.primary, fontWeight: 600 }}
+                  >
                     {v?.name}
                   </Typography>
-                      <Typography sx={{ color: theme.palette.text.secondary, fontSize: "12px" }}>
+                  <Typography
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontSize: "12px",
+                    }}
+                  >
                     Email: {v?.email}
                   </Typography>
                   <Typography
                     sx={{
-                          color:
-                            v?.status === "banned"
-                              ? theme.palette.error.main
-                              : theme.palette.success.main,
+                      color:
+                        v?.status === "banned"
+                          ? theme.palette.error.main
+                          : theme.palette.success.main,
                       fontSize: "12px",
                       fontWeight: 600,
                     }}
                   >
                     Status: {v?.status}
                   </Typography>
-                      <Typography sx={{ color: theme.palette.text.secondary, fontSize: "12px" }}>
+                  <Typography
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontSize: "12px",
+                    }}
+                  >
                     Membership: {v?.membership_level || "Wholesale"}
                   </Typography>
-                      <Typography sx={{ color: theme.palette.text.secondary, fontSize: "12px" }}>
-                    Updated: {dayjs(v?.updated_at).format("DD MMM YYYY hh:mm A")}
+                  <Typography
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Updated:{" "}
+                    {dayjs(v?.updated_at).format("DD MMM YYYY hh:mm A")}
                   </Typography>
 
                   <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
@@ -387,17 +438,17 @@ export default function Home() {
                       sx={{
                         textTransform: "none",
                         fontSize: "11px",
-                            background:
-                              v?.status === "banned"
-                                ? theme.palette.success.main
-                                : theme.palette.error.main,
-                            color: theme.palette.primary.contrastText,
-                            "&:hover": {
-                              background:
-                                v?.status === "banned"
-                                  ? theme.palette.success.light
-                                  : theme.palette.error.light,
-                            },
+                        background:
+                          v?.status === "banned"
+                            ? theme.palette.success.main
+                            : theme.palette.error.main,
+                        color: theme.palette.primary.contrastText,
+                        "&:hover": {
+                          background:
+                            v?.status === "banned"
+                              ? theme.palette.success.light
+                              : theme.palette.error.light,
+                        },
                       }}
                       onClick={() => toggleBan(v)}
                     >
@@ -410,14 +461,14 @@ export default function Home() {
                       sx={{
                         textTransform: "none",
                         fontSize: "11px",
-                            borderColor: theme.palette.primary.main,
-                            color: theme.palette.primary.main,
+                        borderColor: theme.palette.primary.main,
+                        color: theme.palette.primary.main,
                         minWidth: "unset",
                         padding: "0px 6px",
-                            "&:hover": {
-                              borderColor: theme.palette.primary.light,
-                              color: theme.palette.primary.light,
-                            },
+                        "&:hover": {
+                          borderColor: theme.palette.primary.light,
+                          color: theme.palette.primary.light,
+                        },
                       }}
                       onClick={() => {
                         setVendorPopup(v);
@@ -429,7 +480,7 @@ export default function Home() {
                   </Box>
                 </Box>
               ))}
-            </Box>
+          </Box>
           </Box>
         )}
 
@@ -447,5 +498,3 @@ export default function Home() {
     </AdminLayout>
   );
 }
-
-*/

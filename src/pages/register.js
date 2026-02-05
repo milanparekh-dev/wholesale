@@ -1,14 +1,3 @@
-export async function getServerSideProps() {
-  return {
-    redirect: { destination: "/products", permanent: false },
-  };
-}
-
-export default function RegisterRemoved() {
-  return null;
-}
-
-/* REMOVED: legacy register page (auth/session disabled)
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
@@ -230,7 +219,7 @@ export default function RegisterPage() {
 
           <Box sx={{ position: "relative", px: 4 }}>
             <Typography fontSize={18} fontWeight={600}>
-              Wholesale Leville Inc.
+              Beauté Leville Inc.
             </Typography>
             <Typography fontSize={32} fontWeight={700} mt={1}>
               Join our fragrance family
@@ -403,7 +392,7 @@ export default function RegisterPage() {
             {/* STEP 3 */}
             {step === 3 && (
               <motion.div {...animProps} style={{ textAlign: "center" }}>
-                <Typography>Enter OTP sent to your email</Typography>
+                <Typography>Enter OTP sent to your phone</Typography>
                 <OTPInput
                   value={otp}
                   onChange={setOtp}
@@ -438,5 +427,3 @@ const animProps = {
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0 },
 };
-
-*/

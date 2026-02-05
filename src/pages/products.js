@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useRouter } from "next/router";
 import CartButton from "/src/components/CartButton";
 import VendorPopup from "/src/components/VendorPopup";
+import Loading from "/src/components/Loading";
 import {
   Typography,
   Button,
@@ -29,9 +31,19 @@ import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import LogoutIcon from "@mui/icons-material/Logout";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { getMembershipPrice } from "../utility/pricing";
+import { DEFAULT_PRODUCT_IMAGE } from "../utility/constants";
+import batch1 from "/src/products/products_mapped_batch_1.json";
+import batch2 from "/src/products/products_mapped_batch_2.json";
+import batch3 from "/src/products/products_mapped_batch_3.json";
+import batch4 from "/src/products/products_mapped_batch_4.json";
+import batch5 from "/src/products/products_mapped_batch_5.json";
 
 export default function Home() {
+  const router = useRouter();
+  const membershipLevel = useSelector((state) => state.auth.membership_level);
   const [search, setSearch] = useState("");
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [vendorPopup, setVendorPopup] = useState(null);
@@ -45,39 +57,44 @@ export default function Home() {
   const isMobile = useMediaQuery("(max-width:768px)");
   const containerRef = useRef(null);
   const theme = useTheme();
+  const [pageLoading, setPageLoading] = useState(true);
+
+  const handleLogout = () => {
+    localStorage.removeItem("api_token");
+    router.push("/login");
+  };
 
   useEffect(() => {
-    const fetchProductFromExcel = async () => {
-      const url =
-        "https://script.google.com/macros/s/AKfycbzz37QCDY8kH1b-pn_tYAP34itiCTdHUT_O9bjfmBULoii1e0AH7k-eKpvnMB7U4bw5/exec?token=abhi_nextjs_sheet_987xyz";
+    const loadProducts = () => {
       try {
         setLoading(true);
-        const response = await fetch(url);
-        const data = await response.json();
-        const parsedData = data.map((item) => ({
+        const allBatches = [...batch1, ...batch2, ...batch3, ...batch4, ...batch5];
+        const parsedData = allBatches.map((item) => ({
           ...item,
-          vendors: item.vendors ? JSON.parse(item.vendors) : [],
+          brand_name: item.brand, // Map brand to brand_name
+          vendors: item.vendors || [],
         }));
 
         const normalizedData = parsedData.map((item) => ({
           ...item,
           vendors: Array.isArray(item.vendors)
             ? item.vendors.map((v) => ({
-                ...v,
-                price: Number(v.price) || 0,
-                qty: Number(v.qty) || 0,
-              }))
+              ...v,
+              price: Number(v.price) || 0,
+              qty: Number(v.qty) || 0,
+            }))
             : [],
         }));
 
         setProductsList(normalizedData);
       } catch (error) {
-        toast.error("Unable to fetch products from Excel!");
+        toast.error("Unable to load products!");
       } finally {
         setLoading(false);
+        setPageLoading(false);
       }
     };
-    fetchProductFromExcel();
+    loadProducts();
   }, []);
 
   // Fetch brands
@@ -118,7 +135,7 @@ export default function Home() {
           if (totalQty > 0) {
             console.log("totalQty", totalQty);
           }
-          
+
           return brandMatch && titleMatch && totalQty > 0;
         });
 
@@ -249,228 +266,241 @@ export default function Home() {
         color: theme.palette.text.primary,
       }}
     >
-      {/* Header */}
-      <Box
-        sx={{
-          background: theme.palette.background.paper,
-          padding: isMobile ? "10px 10px" : "10px 70px",
-          display: "flex",
-          justifyContent: "space-between",
-          boxShadow: "0 2px 10px rgba(4,6,8,0.6)",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-        }}
-      >
-        <Typography
-          variant="h5"
-          sx={{ fontWeight: 700, color: theme.palette.text.primary, alignSelf: "center" }}
-        >
-          Wholesale Leville Inc.
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <CartButton />
-        </Box>
-      </Box>
-
-      {/* Mobile Filters */}
-      {isMobile && (
+      <div>
+        {/* Header */}
         <Box
           sx={{
+            background: theme.palette.background.paper,
+            padding: isMobile ? "10px 10px" : "10px 70px",
             display: "flex",
-            gap: 1,
-            p: "10px",
             justifyContent: "space-between",
+            boxShadow: "0 2px 10px rgba(4,6,8,0.6)",
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
           }}
         >
-          <Button
-            variant="contained"
-            startIcon={<FilterAltIcon />}
-            sx={{
-              textTransform: "none",
-              background: theme.palette.primary.main,
-              color: theme.palette.background.default,
-              "&:hover": { background: theme.palette.primary.light },
-            }}
-            onClick={() => setDrawerOpen(true)}
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: 700, color: theme.palette.text.primary, alignSelf: "center" }}
           >
-            Filters
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<FilterAltOffIcon />}
-            sx={{
-              textTransform: "none",
-              color: theme.palette.secondary.main,
-              borderColor: theme.palette.secondary.main,
-            }}
-            onClick={handleResetFilters}
-            disabled={!hasActiveFilters}
-          >
-            Reset
-          </Button>
+            Wholesale Leville Inc.
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <CartButton />
+            <IconButton onClick={handleLogout} sx={{ color: theme.palette.text.primary }}>
+              <LogoutIcon />
+            </IconButton>
+          </Box>
         </Box>
-      )}
 
-      {/* Main Layout */}
-      <Box
-        sx={{
-          display: "flex",
-          gap: "30px",
-          padding: isMobile ? "10px" : "20px 70px",
-        }}
-      >
-        {/* Sidebar */}
-        {!isMobile && (
+        {/* Mobile Filters */}
+        {isMobile && (
           <Box
             sx={{
-              width: "280px",
-              background: theme.palette.background.paper,
-              borderRadius: "4px",
-              padding: "20px",
-              boxShadow: "0 2px 8px rgba(4,6,8,0.5)",
-              border: `1px solid ${theme.palette.divider}`,
+              display: "flex",
+              gap: 1,
+              p: "10px",
+              justifyContent: "space-between",
             }}
           >
-            {FilterContentInner}
+            <Button
+              variant="contained"
+              startIcon={<FilterAltIcon />}
+              sx={{
+                textTransform: "none",
+                background: theme.palette.primary.main,
+                color: theme.palette.background.default,
+                "&:hover": { background: theme.palette.primary.light },
+              }}
+              onClick={() => setDrawerOpen(true)}
+            >
+              Filters
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<FilterAltOffIcon />}
+              sx={{
+                textTransform: "none",
+                color: theme.palette.secondary.main,
+                borderColor: theme.palette.secondary.main,
+              }}
+              onClick={handleResetFilters}
+              disabled={!hasActiveFilters}
+            >
+              Reset
+            </Button>
           </Box>
         )}
 
-        {/* Products Table */}
-        <Box sx={{ flex: 1 }}>
-          <TableContainer
-            component={Paper}
-            id="scrollableTable"
-            ref={containerRef}
-            sx={{
-              borderRadius: "4px",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              background: theme.palette.background.paper,
-              boxShadow: "0 2px 8px rgba(4,6,8,0.5)",
-              border: `1px solid ${theme.palette.divider}`,
-            }}
-          >
-            <InfiniteScroll
-              dataLength={products.length}
-              next={fetchNext}
-              hasMore={hasMore}
-              loader={
-                <Typography align="center" sx={{ p: 2 }}>
-                  Loading...
-                </Typography>
-              }
-              scrollableTarget="scrollableTable"
+        {/* Main Layout */}
+        <Box
+          sx={{
+            display: "flex",
+            gap: "30px",
+            padding: isMobile ? "10px" : "20px 70px",
+          }}
+        >
+          {/* Sidebar */}
+          {!isMobile && (
+            <Box
+              sx={{
+                width: "280px",
+                background: theme.palette.background.paper,
+                borderRadius: "4px",
+                padding: "20px",
+                boxShadow: "0 2px 8px rgba(4,6,8,0.5)",
+                border: `1px solid ${theme.palette.divider}`,
+              }}
             >
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    {["Price", "Product Name", "QTY", "Action"].map((h) => (
-                      <TableCell
-                        key={h}
-                        sx={{
-                          color: theme.palette.text.secondary,
-                          fontWeight: 600,
-                          padding: "10px 12px",
-                          background: theme.palette.background.elevated,
-                        }}
-                      >
-                        {h}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {products.map((product) => {
-                    const lowestVendor = product.vendors?.reduce((a, b) =>
-                      a.price < b.price ? a : b
-                    );
-                    const totalQty = product.vendors?.reduce(
-                      (sum, v) => sum + (v.qty || 0),
-                      0
-                    );
-                    const priceNumber = Number(lowestVendor?.price);
-                    const displayPrice = Number.isFinite(priceNumber)
-                      ? priceNumber.toFixed(2)
-                      : "N/A";
-                    return (
-                      <TableRow
-                        key={product.upc}
-                        sx={{
-                          "&:hover": {
-                            background: "rgba(138, 180, 248, 0.08)",
-                          },
-                        }}
-                      >
+              {FilterContentInner}
+            </Box>
+          )}
+
+          {/* Products Table */}
+          <Box sx={{ flex: 1 }}>
+            <TableContainer
+              component={Paper}
+              id="scrollableTable"
+              ref={containerRef}
+              sx={{
+                borderRadius: "4px",
+                maxHeight: "80vh",
+                overflowY: "auto",
+                background: theme.palette.background.paper,
+                boxShadow: "0 2px 8px rgba(4,6,8,0.5)",
+                border: `1px solid ${theme.palette.divider}`,
+              }}
+            >
+              <InfiniteScroll
+                dataLength={products.length}
+                next={fetchNext}
+                hasMore={hasMore}
+                loader={
+                  <Typography align="center" sx={{ p: 2 }}>
+                    Loading...
+                  </Typography>
+                }
+                scrollableTarget="scrollableTable"
+              >
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      {["Image", "Price", "Product Name", "QTY", "Action"].map((h) => (
                         <TableCell
+                          key={h}
                           sx={{
-                            color: theme.palette.success.main,
+                            color: theme.palette.text.secondary,
                             fontWeight: 600,
-                            padding: "4px 12px",
+                            padding: "10px 12px",
+                            background: theme.palette.background.elevated,
                           }}
                         >
-                          {displayPrice === "N/A" ? displayPrice : `$${displayPrice}`}
+                          {h}
                         </TableCell>
-                        <TableCell sx={{ padding: "4px 12px" }}>
-                          {product.title}
-                        </TableCell>
-                        <TableCell
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {products.map((product) => {
+                      const priceList = product.vendors?.map((v) =>
+                        getMembershipPrice(v, membershipLevel)
+                      ) || [0];
+                      const lowestPrice = Math.min(...priceList);
+                      const totalQty = product.vendors?.reduce(
+                        (sum, v) => sum + (v.qty || 0),
+                        0
+                      );
+                      const displayPrice = lowestPrice > 0 ? lowestPrice.toFixed(2) : "N/A";
+                      return (
+                        <TableRow
+                          key={product.upc}
                           sx={{
-                            color: totalQty > 0 ? theme.palette.success.main : theme.palette.error.main,
-                            fontWeight: 600,
-                            padding: "4px 12px",
+                            "&:hover": { bgcolor: theme.palette.action.hover },
+                            cursor: "pointer",
                           }}
                         >
-                          {totalQty}
-                        </TableCell>
-                        <TableCell sx={{ padding: "4px 12px" }}>
-                          <Button
-                            variant="contained"
-                            size="small"
-                            onClick={() => setVendorPopup(product)}
+                          <TableCell sx={{ padding: "4px 8px" }}>
+                            <img
+                              src={product.image || DEFAULT_PRODUCT_IMAGE}
+                              width={35}
+                              height={35}
+                              style={{
+                                borderRadius: 4,
+                                objectFit: "cover",
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell
                             sx={{
-                              textTransform: "none",
-                              background: theme.palette.primary.main,
-                              color: theme.palette.background.default,
-                              "&:hover": { background: theme.palette.primary.light },
+                              color: theme.palette.success.main,
+                              fontWeight: 600,
+                              padding: "4px 12px",
                             }}
                           >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </InfiniteScroll>
-          </TableContainer>
+                            {displayPrice === "N/A" ? displayPrice : `$${displayPrice}`}
+                          </TableCell>
+                          <TableCell sx={{ padding: "4px 12px" }}>
+                            {product.title}
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              color: totalQty > 0 ? theme.palette.success.main : theme.palette.error.main,
+                              fontWeight: 600,
+                              padding: "4px 12px",
+                            }}
+                          >
+                            {totalQty}
+                          </TableCell>
+                          <TableCell sx={{ padding: "4px 12px" }}>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={() => setVendorPopup(product)}
+                              sx={{
+                                textTransform: "none",
+                                background: theme.palette.primary.main,
+                                color: theme.palette.background.default,
+                                "&:hover": { background: theme.palette.primary.light },
+                              }}
+                            >
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </InfiniteScroll>
+            </TableContainer>
+          </Box>
         </Box>
-      </Box>
 
-      {/* Drawer for mobile filters */}
-      <Drawer
-        anchor="left"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        PaperProps={{
-          sx: {
-            width: "80vw",
-            background: theme.palette.background.paper,
-            color: theme.palette.text.primary,
-            borderRight: `1px solid ${theme.palette.divider}`,
-          },
-        }}
-      >
-        <Box sx={{ p: 2 }}>{FilterContentInner}</Box>
-      </Drawer>
+        {/* Drawer for mobile filters */}
+        <Drawer
+          anchor="left"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          PaperProps={{
+            sx: {
+              width: "80vw",
+              background: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+              borderRight: `1px solid ${theme.palette.divider}`,
+            },
+          }}
+        >
+          <Box sx={{ p: 2 }}>{FilterContentInner}</Box>
+        </Drawer>
 
-      {vendorPopup && (
-        <VendorPopup
-          product={vendorPopup}
-          close={() => setVendorPopup(null)}
-        />
-      )}
+        {vendorPopup && (
+          <VendorPopup
+            product={vendorPopup}
+            close={() => setVendorPopup(null)}
+          />
+        )}
+      </div>
     </Box>
   );
 }

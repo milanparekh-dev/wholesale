@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Box,
@@ -10,8 +11,10 @@ import {
   Link,
   useMediaQuery,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import { Add, Remove, Delete, ArrowBack } from "@mui/icons-material";
+import LogoutIcon from "@mui/icons-material/Logout";
 import Swal from "sweetalert2";
 import {
   addToCart,
@@ -19,8 +22,9 @@ import {
   decreaseQty,
   clearCart,
 } from "../store/cartSlice";
-import { useRouter } from "next/router";
 import { toast } from "react-toastify";
+import adminApi from "../utility/adminApi";
+import { DEFAULT_PRODUCT_IMAGE } from "../utility/constants";
 
 export default function CartCheckout() {
   const theme = useTheme();
@@ -28,6 +32,12 @@ export default function CartCheckout() {
   const dispatch = useDispatch();
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width:600px)");
+  const [loadingQuote, setLoadingQuote] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem("api_token");
+    router.push("/login");
+  };
 
   const totalPrice = items.reduce(
     (acc, item) => acc + (item.price || 20) * (item.qty || 1),
@@ -58,47 +68,74 @@ export default function CartCheckout() {
       });
     }
 
+    setLoadingQuote(true);
     try {
-      const result = await Swal.fire({
-        title: "Send Quote",
-        html:
-          '<input id="q_name" class="swal2-input" placeholder="Your name" />' +
-          '<input id="q_email" class="swal2-input" placeholder="Your email" type="email" />' +
-          '<input id="q_company" class="swal2-input" placeholder="Company (optional)" />' +
-          '<input id="q_phone" class="swal2-input" placeholder="Phone (optional)" />' +
-          '<textarea id="q_note" class="swal2-textarea" placeholder="Note (optional)"></textarea>',
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: "Send",
-        cancelButtonText: "Cancel",
-        confirmButtonColor: theme.palette.primary.main,
-        background: theme.palette.background.paper,
-        color: theme.palette.text.primary,
-        preConfirm: () => {
-          const name = document.getElementById("q_name")?.value?.trim();
-          const email = document.getElementById("q_email")?.value?.trim();
-          const company = document.getElementById("q_company")?.value?.trim();
-          const phone = document.getElementById("q_phone")?.value?.trim();
-          const note = document.getElementById("q_note")?.value?.trim();
+      let customerData;
 
-          if (!name) {
-            Swal.showValidationMessage("Name is required");
-            return;
-          }
-          if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-            Swal.showValidationMessage("Valid email is required");
-            return;
-          }
-          return { name, email, company, phone, note };
-        },
-      });
+      const token = localStorage.getItem("api_token");
+      if (token) {
+        // User is logged in, fetch user data
+        try {
+          const res = await adminApi.get("/api/user-me");
+          const user = res.data || {};
+          customerData = {
+            name: user.name || "",
+            email: user.email || "",
+            company: "",
+            phone: user.phone || "",
+            note: "",
+          };
+        } catch (error) {
+          // If fetching user data fails, fall back to popup
+          console.error("Failed to fetch user data:", error);
+        }
+      }
 
-      if (!result.isConfirmed) return;
+      if (!customerData) {
+        // Not logged in or failed to fetch, show popup
+        const result = await Swal.fire({
+          title: "Send Quote",
+          html:
+            '<input id="q_name" class="swal2-input" placeholder="Your name" />' +
+            '<input id="q_email" class="swal2-input" placeholder="Your email" type="email" />' +
+            '<input id="q_company" class="swal2-input" placeholder="Company (optional)" />' +
+            '<input id="q_phone" class="swal2-input" placeholder="Phone (optional)" />' +
+            '<textarea id="q_note" class="swal2-textarea" placeholder="Note (optional)"></textarea>',
+          focusConfirm: false,
+          showCancelButton: true,
+          confirmButtonText: "Send",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: theme.palette.primary.main,
+          background: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          preConfirm: () => {
+            const name = document.getElementById("q_name")?.value?.trim();
+            const email = document.getElementById("q_email")?.value?.trim();
+            const company = document.getElementById("q_company")?.value?.trim();
+            const phone = document.getElementById("q_phone")?.value?.trim();
+            const note = document.getElementById("q_note")?.value?.trim();
+
+            if (!name) {
+              Swal.showValidationMessage("Name is required");
+              return;
+            }
+            if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+              Swal.showValidationMessage("Valid email is required");
+              return;
+            }
+            return { name, email, company, phone, note };
+          },
+        });
+
+        if (!result.isConfirmed) return;
+        customerData = result.value;
+      }
+      // For logged in users, customerData is already set, proceed to send
 
       const res = await fetch("/api/send-quote-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer: result.value, items }),
+        body: JSON.stringify({ customer: customerData, items }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -119,6 +156,8 @@ export default function CartCheckout() {
       });
     } catch (error) {
       toast.error(error?.message || "Unable to send quote!");
+    } finally {
+      setLoadingQuote(false);
     }
   };
 
@@ -148,7 +187,7 @@ export default function CartCheckout() {
       >
         <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontWeight: 700 }}>
           <Link
-            href="/products"
+            href="/"
             underline="none"
             sx={{
               display: "flex",
@@ -170,6 +209,9 @@ export default function CartCheckout() {
             Wholesale Leville Inc.
           </Link>
         </Typography>
+        <IconButton onClick={handleLogout} sx={{ color: theme.palette.text.primary }}>
+          <LogoutIcon />
+        </IconButton>
       </Box>
 
       <Typography
@@ -222,19 +264,35 @@ export default function CartCheckout() {
                   },
                 }}
               >
-                <Box sx={{ flex: 2, minWidth: 180 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    {item.title}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: 13,
-                      color: theme.palette.success.main,
-                      fontWeight: 600,
-                    }}
-                  >
-                    ${item.price?.toFixed(2) || 20}
-                  </Typography>
+                <Box
+                  sx={{
+                    flex: 2,
+                    minWidth: 180,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                  }}
+                >
+                  <img
+                    src={item.image || DEFAULT_PRODUCT_IMAGE}
+                    width={45}
+                    height={45}
+                    style={{ borderRadius: 4, objectFit: "cover" }}
+                  />
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      {item.title}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: 13,
+                        color: theme.palette.success.main,
+                        fontWeight: 600,
+                      }}
+                    >
+                      ${item.price?.toFixed(2) || 20}
+                    </Typography>
+                  </Box>
                 </Box>
 
                 <Box sx={{ display: "flex", gap: 1, mt: isMobile ? 2 : 0 }}>
@@ -324,6 +382,7 @@ export default function CartCheckout() {
             variant="contained"
             fullWidth
             onClick={handleRequestQuote}
+            disabled={loadingQuote}
             sx={{
               textTransform: "none",
               borderRadius: "10px",
@@ -332,7 +391,7 @@ export default function CartCheckout() {
               fontWeight: 600,
             }}
           >
-            Request Quote
+            {loadingQuote ? <CircularProgress size={20} color="inherit" /> : "Request Quote"}
           </Button>
         </Paper>
       </Box>

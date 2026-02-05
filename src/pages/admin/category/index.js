@@ -1,14 +1,3 @@
-export async function getServerSideProps() {
-  return {
-    redirect: { destination: "/products", permanent: false },
-  };
-}
-
-export default function AdminCategoryRemoved() {
-  return null;
-}
-
-/* REMOVED: legacy admin category page (auth/session disabled)
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -144,8 +133,8 @@ export default function Home() {
             justifyContent: "space-between",
             gap: 2,
             flexWrap: "wrap",
-            mb: 3,
-            p: 1.5,
+            mb: 2,
+            p: "5px 10px",
             background: theme.palette.background.paper,
             borderRadius: "4px",
             border: `1px solid ${theme.palette.divider}`,
@@ -241,7 +230,7 @@ export default function Home() {
                   border: `1px solid ${theme.palette.divider}`,
                   maxHeight: "80vh",
                   overflowY: "auto",
-                  mt: 2,
+                  mt: 1,
                   boxShadow: "0 20px 48px rgba(4,6,8,0.5)",
                 }}
               >
@@ -274,22 +263,22 @@ export default function Home() {
                           },
                         }}
                       >
-                        <TableCell sx={{ padding: "4px 8px" }}>
+                        <TableCell sx={{ padding: "2px 8px" }}>
                           <Typography sx={{ color: theme.palette.text.primary }}>
                             {b?.name || "No Category Name"}
                           </Typography>
                         </TableCell>
-                        <TableCell sx={{ padding: "4px 8px" }}>
+                        <TableCell sx={{ padding: "2px 8px" }}>
                           <Typography sx={{ color: theme.palette.text.secondary }}>
                             {dayjs(b?.created_at).format("DD MMM YYYY hh:mm A")}
                           </Typography>
                         </TableCell>
-                        <TableCell sx={{ padding: "4px 8px" }}>
+                        <TableCell sx={{ padding: "2px 8px" }}>
                           <Typography sx={{ color: theme.palette.text.secondary }}>
                             {dayjs(b?.updated_at).format("DD MMM YYYY hh:mm A")}
                           </Typography>
                         </TableCell>
-                        <TableCell sx={{ padding: "4px 8px" }}>
+                        <TableCell sx={{ padding: "2px 8px" }}>
                           <Button
                             size="small"
                             onClick={(e) => handleMenuClick(e, b)}
@@ -416,5 +405,3 @@ export default function Home() {
     </AdminLayout>
   );
 }
-
-*/

@@ -1,17 +1,9 @@
-export async function getServerSideProps() {
-  return {
-    redirect: { destination: "/products", permanent: false },
-  };
-}
-
-export default function LoginRemoved() {
-  return null;
-}
-/* REMOVED: legacy login page (auth/session disabled)
 "use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useDispatch } from "react-redux";
+import { login as loginAction } from "../store/authSlice";
 import {
   Box,
   Button,
@@ -34,6 +26,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 export default function LoginPage() {
   const theme = useTheme();
+  const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
@@ -153,7 +146,9 @@ export default function LoginPage() {
       const res = await adminApi.post("/api/login", data);
       if (res?.status === "success") {
         localStorage.setItem("api_token", res?.data?.api_token);
-        router.push("/products");
+        localStorage.setItem("user_data", JSON.stringify(res?.data));
+        dispatch(loginAction(res?.data));
+        router.push("/");
       }
     } catch (error) {
       if (error?.response?.data?.data?.status === "phone_not_verified") {
@@ -179,6 +174,8 @@ export default function LoginPage() {
       const res = await adminApi.post("/api/verify-otp", data);
       if (res?.status === "success") {
         localStorage.setItem("api_token", res?.data?.user?.api_token);
+        localStorage.setItem("user_data", JSON.stringify(res?.data?.user));
+        dispatch(loginAction(res?.data?.user));
         router.push("/");
       }
     } catch {
@@ -274,7 +271,7 @@ export default function LoginPage() {
           />
           <Box sx={{ position: "relative" }}>
             <Typography fontSize={18} fontWeight={600}>
-              Wholesale Leville Inc.
+              Beauté Leville Inc.
             </Typography>
             <Typography fontSize={32} fontWeight={700}>
               Welcome Back
@@ -599,5 +596,3 @@ export default function LoginPage() {
     </Box>
   );
 }
-
-*/

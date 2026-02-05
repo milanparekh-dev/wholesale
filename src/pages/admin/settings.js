@@ -1,15 +1,3 @@
-export async function getServerSideProps() {
-  return {
-    redirect: { destination: "/products", permanent: false },
-  };
-}
-
-export default function AdminSettingsRemoved() {
-  return null;
-}
-
-/* REMOVED: legacy admin settings page (auth/session disabled)
-
 import React, { useEffect, useState } from "react";
 import {
   Typography,
@@ -220,5 +208,3 @@ export default function Home() {
     </AdminLayout>
   );
 }
-
-*/

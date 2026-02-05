@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   user: null,
+  membership_level: "wholesale", // default fallback
 };
 
 const authSlice = createSlice({
@@ -11,12 +12,14 @@ const authSlice = createSlice({
   reducers: {
     login(state, action) {
       state.user = action.payload;
+      state.membership_level = action.payload?.membership_level || "wholesale";
     },
     register(state, action) {
       state.user = action.payload;
     },
     logout(state) {
       state.user = null;
+      state.membership_level = "wholesale";
     },
   },
 });

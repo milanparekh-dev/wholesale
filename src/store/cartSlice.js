@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  items: [], // {upc, vendor, qty, title, price}
+  items: [], // {upc, qty, title, price, brand, vendor_name}
 };
 
 const cartSlice = createSlice({
@@ -11,7 +11,6 @@ const cartSlice = createSlice({
     addToCart(state, action) {
       const {
         upc,
-        vendor,
         qty = 1,
         title,
         price,
@@ -20,7 +19,7 @@ const cartSlice = createSlice({
         sku,
       } = action.payload;
       const existing = state.items.find(
-        (item) => item.upc === upc && item.vendor === vendor
+        (item) => item.upc === upc
       );
 
       if (existing) {
@@ -28,7 +27,6 @@ const cartSlice = createSlice({
       } else {
         state.items.push({
           upc,
-          vendor,
           qty,
           title,
           price,
@@ -39,9 +37,9 @@ const cartSlice = createSlice({
       }
     },
     decreaseQty(state, action) {
-      const { upc, vendor } = action.payload;
+      const { upc } = action.payload;
       const existing = state.items.find(
-        (item) => item.upc === upc && item.vendor === vendor
+        (item) => item.upc === upc
       );
 
       if (existing) {
@@ -49,15 +47,15 @@ const cartSlice = createSlice({
         if (existing.qty <= 0) {
           // remove item if qty <= 0
           state.items = state.items.filter(
-            (item) => !(item.upc === upc && item.vendor === vendor)
+            (item) => item.upc !== upc
           );
         }
       }
     },
     removeFromCart(state, action) {
-      const { upc, vendor } = action.payload;
+      const { upc } = action.payload;
       state.items = state.items.filter(
-        (item) => !(item.upc === upc && item.vendor === vendor)
+        (item) => item.upc !== upc
       );
     },
     clearCart(state) {

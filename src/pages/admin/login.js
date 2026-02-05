@@ -1,14 +1,3 @@
-export async function getServerSideProps() {
-  return {
-    redirect: { destination: "/products", permanent: false },
-  };
-}
-
-export default function AdminLoginRemoved() {
-  return null;
-}
-
-/* REMOVED: legacy admin login page (auth/session disabled)
 "use client";
 
 import React, { useState } from "react";
@@ -140,7 +129,7 @@ export default function LoginPage() {
 
           <Box sx={{ position: "relative", px: 4 }}>
             <Typography fontSize={18} fontWeight={600}>
-              Wholesale Leville Inc.
+              Beauté Leville Inc.
             </Typography>
             <Typography fontSize={32} fontWeight={700} mt={1}>
               Welcome Back
@@ -241,5 +230,3 @@ export default function LoginPage() {
     </Box>
   );
 }
-
-*/

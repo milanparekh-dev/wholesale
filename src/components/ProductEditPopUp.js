@@ -19,6 +19,7 @@ import {
 import { Add, Delete } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import adminApi from "/src/utility/adminApi";
+import { DEFAULT_PRODUCT_IMAGE } from "../utility/constants";
 
 export default function ProductEditPopUp({
   product,
@@ -47,15 +48,15 @@ export default function ProductEditPopUp({
     product?.vendors?.length
       ? JSON.parse(product.vendors)
       : [
-          {
-            vendor_id: "",
-            sku: "",
-            price: "",
-            qty: "",
-            vipStandardPrice: "",
-            vipPremiumPrice: "",
-          },
-        ]
+        {
+          vendor_id: "",
+          sku: "",
+          price: "",
+          qty: "",
+          vipStandardPrice: "",
+          vipPremiumPrice: "",
+        },
+      ]
   );
 
   /* ---------------- HANDLERS ---------------- */
@@ -166,272 +167,280 @@ export default function ProductEditPopUp({
   return (
     <Box sx={overlayStyle(theme)} onClick={close}>
       <Paper sx={modalStyle(theme, isMobile)} onClick={(e) => e.stopPropagation()}>
-          <Typography variant="h6" color={theme.palette.text.primary}>
-            {isEdit ? "Edit Product" : "Add Product"}
+        <Typography variant="h6" color={theme.palette.text.primary}>
+          {isEdit ? "Edit Product" : "Add Product"}
+        </Typography>
+        <Divider sx={{ my: 2, bgcolor: theme.palette.divider }} />
+
+        {/* ---------------- GENERAL SECTION ---------------- */}
+        <Box sx={sectionStyle(theme, "subtle")}>
+          <Typography sx={sectionTitle(theme.palette.primary.main)}>
+            General Product Information
           </Typography>
-          <Divider sx={{ my: 2, bgcolor: theme.palette.divider }} />
 
-          {/* ---------------- GENERAL SECTION ---------------- */}
-          <Box sx={sectionStyle(theme, "subtle")}>
-            <Typography sx={sectionTitle(theme.palette.primary.main)}>
-              General Product Information
-            </Typography>
+          <Box sx={gridStyle}>
+            <TextField
+              label="UPC"
+              value={productState.upc}
+              onChange={(e) => handleProductChange("upc", e.target.value)}
+              fullWidth
+              sx={inputSx}
+            />
 
-            <Box sx={gridStyle}>
-              <TextField
-                label="UPC"
-                value={productState.upc}
-                onChange={(e) => handleProductChange("upc", e.target.value)}
-                fullWidth
-                sx={inputSx}
-              />
+            <TextField
+              label="Title"
+              value={productState.title}
+              onChange={(e) => handleProductChange("title", e.target.value)}
+              fullWidth
+              sx={inputSx}
+            />
 
-              <TextField
-                label="Title"
-                value={productState.title}
-                onChange={(e) => handleProductChange("title", e.target.value)}
-                fullWidth
-                sx={inputSx}
-              />
-
-              <FormControl fullWidth sx={inputSx}>
-                <InputLabel>Brand</InputLabel>
-                <Select
-                  value={productState.brand_id}
-                  label="Brand"
-                  onChange={(e) =>
-                    handleProductChange("brand_id", e.target.value)
-                  }
-                >
-                  {brandsList?.map((b) => (
-                    <MenuItem key={b._id} value={b._id}>
-                      {b.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth sx={inputSx}>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={productState.category_id}
-                  label="Category"
-                  onChange={(e) =>
-                    handleProductChange("category_id", e.target.value)
-                  }
-                >
-                  {categoryList?.map((c) => (
-                    <MenuItem key={c._id} value={c._id}>
-                      {c.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <TextField
-                label="Gender"
-                value={productState.gender_id}
+            <FormControl fullWidth sx={inputSx}>
+              <InputLabel>Brand</InputLabel>
+              <Select
+                value={productState.brand_id}
+                label="Brand"
                 onChange={(e) =>
-                  handleProductChange("gender_id", e.target.value)
+                  handleProductChange("brand_id", e.target.value)
                 }
-                fullWidth
-                sx={inputSx}
-              />
+              >
+                {brandsList?.map((b) => (
+                  <MenuItem key={b._id} value={b._id}>
+                    {b.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-              <Box>
-                <Button
-                  component="label"
-                  variant="outlined"
-                  sx={{
-                    borderColor: theme.palette.divider,
-                    color: theme.palette.text.secondary,
-                    height: "56px",
-                    mb: 1,
-                    "&:hover": {
-                      borderColor: theme.palette.primary.main,
-                      color: theme.palette.primary.main,
-                    },
-                  }}
-                >
-                  Upload Image
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        handleProductChange("image", e.target.files[0]);
-                      }
-                    }}
-                  />
-                </Button>
+            <FormControl fullWidth sx={inputSx}>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={productState.category_id}
+                label="Category"
+                onChange={(e) =>
+                  handleProductChange("category_id", e.target.value)
+                }
+              >
+                {categoryList?.map((c) => (
+                  <MenuItem key={c._id} value={c._id}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-                {(productState.image &&
-                  typeof productState.image !== "string") ? (
-                  <Box mt={1}>
-                    <img
-                      src={URL.createObjectURL(productState.image)}
-                      alt="Preview"
-                      style={{ maxHeight: 80, borderRadius: 6 }}
-                    />
-                  </Box>
-                ) : productState.image && typeof productState.image === "string" ? (
-                  <Box mt={1}>
-                    <img
-                      src={productState.image}
-                      alt="Current"
-                      style={{ maxHeight: 80, borderRadius: 6 }}
-                    />
-                  </Box>
-                ) : null}
-              </Box>
-            </Box>
-          </Box>
+            <TextField
+              label="Gender"
+              value={productState.gender_id}
+              onChange={(e) =>
+                handleProductChange("gender_id", e.target.value)
+              }
+              fullWidth
+              sx={inputSx}
+            />
 
-          {/* ---------------- VENDOR SECTION ---------------- */}
-          <Box sx={sectionStyle(theme, "paper")}>
-            <Typography sx={sectionTitle(theme.palette.secondary.main)}>
-              Vendor Details
-            </Typography>
-
-            {vendors.map((vendor, index) => (
-              <Box
-                key={index}
+            <Box>
+              <Button
+                component="label"
+                variant="outlined"
                 sx={{
-                  mb: 3,
-                  p: 2.5,
-                  borderRadius: 2,
-                  border: `1px solid ${theme.palette.divider}`,
-                  bgcolor: theme.palette.background.subtle,
+                  borderColor: theme.palette.divider,
+                  color: theme.palette.text.secondary,
+                  height: "56px",
+                  mb: 1,
+                  "&:hover": {
+                    borderColor: theme.palette.primary.main,
+                    color: theme.palette.primary.main,
+                  },
                 }}
               >
-                <Box display="flex" justifyContent="space-between" mb={2}>
-                  <Typography color={theme.palette.text.secondary}>
-                    Vendor #{index + 1}
-                  </Typography>
-
-                  {vendors.length > 1 && (
-                    <IconButton size="small" onClick={() => removeVendor(index)}>
-                      <Delete sx={{ color: theme.palette.error.main }} />
-                    </IconButton>
-                  )}
-                </Box>
-
-                <Box sx={gridStyle}>
-                  <FormControl fullWidth sx={inputSx}>
-                    <InputLabel>Vendor</InputLabel>
-                    <Select
-                      value={vendor.vendor_id}
-                      label="Vendor"
-                      onChange={(e) =>
-                        handleVendorChange(index, "vendor_id", e.target.value)
-                      }
-                    >
-                      {vendorList?.map((v) => (
-                        <MenuItem key={v._id} value={v._id}>
-                          {v.name} ({v.company_name})
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <TextField
-                    label="SKU"
-                    value={vendor.sku}
-                    onChange={(e) =>
-                      handleVendorChange(index, "sku", e.target.value)
+                Upload Image
+                <input
+                  hidden
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleProductChange("image", e.target.files[0]);
                     }
-                    fullWidth
-                    sx={inputSx}
-                  />
+                  }}
+                />
+              </Button>
 
-                  <TextField
-                    label="Price"
-                    type="number"
-                    value={vendor.price}
-                    onChange={(e) =>
-                      handleVendorChange(index, "price", e.target.value)
-                    }
-                    fullWidth
-                    sx={inputSx}
-                  />
-
-                  <TextField
-                    label="Quantity"
-                    type="number"
-                    value={vendor.qty}
-                    onChange={(e) =>
-                      handleVendorChange(index, "qty", e.target.value)
-                    }
-                    fullWidth
-                    sx={inputSx}
-                  />
-
-                  <TextField
-                    label="VIP Standard Price"
-                    type="number"
-                    value={vendor.vipStandardPrice}
-                    onChange={(e) =>
-                      handleVendorChange(index, "vipStandardPrice", e.target.value)
-                    }
-                    fullWidth
-                    sx={inputSx}
-                  />
-
-                  <TextField
-                    label="VIP Premium Price"
-                    type="number"
-                    value={vendor.vipPremiumPrice}
-                    onChange={(e) =>
-                      handleVendorChange(index, "vipPremiumPrice", e.target.value)
-                    }
-                    fullWidth
-                    sx={inputSx}
+              {(productState.image &&
+                typeof productState.image !== "string") ? (
+                <Box mt={1}>
+                  <img
+                    src={URL.createObjectURL(productState.image)}
+                    alt="Preview"
+                    style={{ maxHeight: 80, borderRadius: 6 }}
                   />
                 </Box>
+              ) : productState.image && typeof productState.image === "string" ? (
+                <Box mt={1}>
+                  <img
+                    src={productState.image}
+                    alt="Current"
+                    style={{ maxHeight: 80, borderRadius: 6 }}
+                  />
+                </Box>
+              ) : (
+                <Box mt={1}>
+                  <img
+                    src={DEFAULT_PRODUCT_IMAGE}
+                    alt="Default"
+                    style={{ maxHeight: 80, borderRadius: 6 }}
+                  />
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </Box>
+
+        {/* ---------------- VENDOR SECTION ---------------- */}
+        <Box sx={sectionStyle(theme, "paper")}>
+          <Typography sx={sectionTitle(theme.palette.secondary.main)}>
+            Vendor Details
+          </Typography>
+
+          {vendors.map((vendor, index) => (
+            <Box
+              key={index}
+              sx={{
+                mb: 3,
+                p: 2.5,
+                borderRadius: 2,
+                border: `1px solid ${theme.palette.divider}`,
+                bgcolor: theme.palette.background.subtle,
+              }}
+            >
+              <Box display="flex" justifyContent="space-between" mb={2}>
+                <Typography color={theme.palette.text.secondary}>
+                  Vendor #{index + 1}
+                </Typography>
+
+                {vendors.length > 1 && (
+                  <IconButton size="small" onClick={() => removeVendor(index)}>
+                    <Delete sx={{ color: theme.palette.error.main }} />
+                  </IconButton>
+                )}
               </Box>
-            ))}
 
-            <Button
-              startIcon={<Add />}
-              onClick={addVendor}
-              variant="outlined"
-              sx={{
-                color: theme.palette.primary.main,
-                borderColor: theme.palette.primary.main,
-              }}
-            >
-              Add Another Vendor
-            </Button>
-          </Box>
+              <Box sx={gridStyle}>
+                <FormControl fullWidth sx={inputSx}>
+                  <InputLabel>Vendor</InputLabel>
+                  <Select
+                    value={vendor.vendor_id}
+                    label="Vendor"
+                    onChange={(e) =>
+                      handleVendorChange(index, "vendor_id", e.target.value)
+                    }
+                  >
+                    {vendorList?.map((v) => (
+                      <MenuItem key={v._id} value={v._id}>
+                        {v.name} ({v.company_name})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-          {/* ---------------- ACTIONS ---------------- */}
-          <Box display="flex" justifyContent="flex-end" gap={2}>
-            <Button
-              variant="outlined"
-              onClick={close}
-              sx={{
-                borderColor: theme.palette.divider,
-                color: theme.palette.text.secondary,
-              }}
-            >
-              Cancel
-            </Button>
+                <TextField
+                  label="SKU"
+                  value={vendor.sku}
+                  onChange={(e) =>
+                    handleVendorChange(index, "sku", e.target.value)
+                  }
+                  fullWidth
+                  sx={inputSx}
+                />
 
-            <Button
-              variant="contained"
-              disabled={loading}
-              onClick={handleSave}
-              sx={{
-                background: theme.palette.primary.main,
-                color: theme.palette.background.default,
-                "&:hover": { background: theme.palette.primary.light },
-              }}
-            >
-              {loading ? "Saving..." : "Save"}
-            </Button>
-          </Box>
-        </Paper>
+                <TextField
+                  label="Price"
+                  type="number"
+                  value={vendor.price}
+                  onChange={(e) =>
+                    handleVendorChange(index, "price", e.target.value)
+                  }
+                  fullWidth
+                  sx={inputSx}
+                />
+
+                <TextField
+                  label="Quantity"
+                  type="number"
+                  value={vendor.qty}
+                  onChange={(e) =>
+                    handleVendorChange(index, "qty", e.target.value)
+                  }
+                  fullWidth
+                  sx={inputSx}
+                />
+
+                <TextField
+                  label="VIP Standard Price"
+                  type="number"
+                  value={vendor.vipStandardPrice}
+                  onChange={(e) =>
+                    handleVendorChange(index, "vipStandardPrice", e.target.value)
+                  }
+                  fullWidth
+                  sx={inputSx}
+                />
+
+                <TextField
+                  label="VIP Premium Price"
+                  type="number"
+                  value={vendor.vipPremiumPrice}
+                  onChange={(e) =>
+                    handleVendorChange(index, "vipPremiumPrice", e.target.value)
+                  }
+                  fullWidth
+                  sx={inputSx}
+                />
+              </Box>
+            </Box>
+          ))}
+
+          <Button
+            startIcon={<Add />}
+            onClick={addVendor}
+            variant="outlined"
+            sx={{
+              color: theme.palette.primary.main,
+              borderColor: theme.palette.primary.main,
+            }}
+          >
+            Add Another Vendor
+          </Button>
+        </Box>
+
+        {/* ---------------- ACTIONS ---------------- */}
+        <Box display="flex" justifyContent="flex-end" gap={2}>
+          <Button
+            variant="outlined"
+            onClick={close}
+            sx={{
+              borderColor: theme.palette.divider,
+              color: theme.palette.text.secondary,
+            }}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="contained"
+            disabled={loading}
+            onClick={handleSave}
+            sx={{
+              background: theme.palette.primary.main,
+              color: theme.palette.background.default,
+              "&:hover": { background: theme.palette.primary.light },
+            }}
+          >
+            {loading ? "Saving..." : "Save"}
+          </Button>
+        </Box>
+      </Paper>
     </Box>
   );
 }
