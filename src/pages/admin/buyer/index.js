@@ -312,7 +312,7 @@ export default function Home() {
                       </TableCell>
                       <TableCell sx={{ padding: "2px 8px" }}>
                         <Box sx={{ display: "flex", gap: 1 }}>
-                          <Button
+                          {/* <Button
                             variant="contained"
                             size="small"
                             onClick={() => toggleBan(v)}
@@ -332,7 +332,7 @@ export default function Home() {
                             }}
                           >
                             {v?.status === "banned" ? "Unban" : "Ban"}
-                          </Button>
+                          </Button> */}
 
                           <Button
                             variant="outlined"
@@ -364,123 +364,123 @@ export default function Home() {
           /* MOBILE CARD VIEW */
           <Box sx={{ width: "100%", mt: 2 }}>
             <Box sx={{ maxHeight: "78vh", overflowY: "auto", pb: 2 }}>
-            {filteredVendors.length === 0 && (
-              <Typography
-                sx={{
-                  textAlign: "center",
-                  color: theme.palette.text.secondary,
-                  padding: "20px",
-                }}
-              >
-                No buyer found
-              </Typography>
-            )}
-            {filteredVendors.length > 0 &&
-              filteredVendors.map((v) => (
-                <Box
-                  key={v?._id}
+              {filteredVendors.length === 0 && (
+                <Typography
                   sx={{
-                    background: theme.palette.background.paper,
-                    padding: 1,
-                    mb: 1,
-                    borderRadius: "8px",
-                    border: `1px solid ${theme.palette.divider}`,
-                    boxShadow: "0 14px 32px rgba(4,6,8,0.45)",
+                    textAlign: "center",
+                    color: theme.palette.text.secondary,
+                    padding: "20px",
                   }}
                 >
-                  <Typography
-                    sx={{ color: theme.palette.text.primary, fontWeight: 600 }}
-                  >
-                    {v?.name}
-                  </Typography>
-                  <Typography
+                  No buyer found
+                </Typography>
+              )}
+              {filteredVendors.length > 0 &&
+                filteredVendors.map((v) => (
+                  <Box
+                    key={v?._id}
                     sx={{
-                      color: theme.palette.text.secondary,
-                      fontSize: "12px",
+                      background: theme.palette.background.paper,
+                      padding: 1,
+                      mb: 1,
+                      borderRadius: "8px",
+                      border: `1px solid ${theme.palette.divider}`,
+                      boxShadow: "0 14px 32px rgba(4,6,8,0.45)",
                     }}
                   >
-                    Email: {v?.email}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color:
-                        v?.status === "banned"
-                          ? theme.palette.error.main
-                          : theme.palette.success.main,
-                      fontSize: "12px",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Status: {v?.status}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      fontSize: "12px",
-                    }}
-                  >
-                    Membership: {v?.membership_level || "Wholesale"}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      fontSize: "12px",
-                    }}
-                  >
-                    Updated:{" "}
-                    {dayjs(v?.updated_at).format("DD MMM YYYY hh:mm A")}
-                  </Typography>
-
-                  <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                    <Button
-                      variant="contained"
-                      size="small"
+                    <Typography
+                      sx={{ color: theme.palette.text.primary, fontWeight: 600 }}
+                    >
+                      {v?.name}
+                    </Typography>
+                    <Typography
                       sx={{
-                        textTransform: "none",
-                        fontSize: "11px",
-                        background:
+                        color: theme.palette.text.secondary,
+                        fontSize: "12px",
+                      }}
+                    >
+                      Email: {v?.email}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color:
                           v?.status === "banned"
-                            ? theme.palette.success.main
-                            : theme.palette.error.main,
-                        color: theme.palette.primary.contrastText,
-                        "&:hover": {
+                            ? theme.palette.error.main
+                            : theme.palette.success.main,
+                        fontSize: "12px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Status: {v?.status}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontSize: "12px",
+                      }}
+                    >
+                      Membership: {v?.membership_level || "Wholesale"}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontSize: "12px",
+                      }}
+                    >
+                      Updated:{" "}
+                      {dayjs(v?.updated_at).format("DD MMM YYYY hh:mm A")}
+                    </Typography>
+
+                    <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        sx={{
+                          textTransform: "none",
+                          fontSize: "11px",
                           background:
                             v?.status === "banned"
-                              ? theme.palette.success.light
-                              : theme.palette.error.light,
-                        },
-                      }}
-                      onClick={() => toggleBan(v)}
-                    >
-                      {v?.status === "banned" ? "Unban" : "Ban"}
-                    </Button>
+                              ? theme.palette.success.main
+                              : theme.palette.error.main,
+                          color: theme.palette.primary.contrastText,
+                          "&:hover": {
+                            background:
+                              v?.status === "banned"
+                                ? theme.palette.success.light
+                                : theme.palette.error.light,
+                          },
+                        }}
+                        onClick={() => toggleBan(v)}
+                      >
+                        {v?.status === "banned" ? "Unban" : "Ban"}
+                      </Button>
 
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      sx={{
-                        textTransform: "none",
-                        fontSize: "11px",
-                        borderColor: theme.palette.primary.main,
-                        color: theme.palette.primary.main,
-                        minWidth: "unset",
-                        padding: "0px 6px",
-                        "&:hover": {
-                          borderColor: theme.palette.primary.light,
-                          color: theme.palette.primary.light,
-                        },
-                      }}
-                      onClick={() => {
-                        setVendorPopup(v);
-                        setCategoryPopup(true);
-                      }}
-                    >
-                      Edit <EditIcon sx={{ fontSize: 12 }} />
-                    </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          textTransform: "none",
+                          fontSize: "11px",
+                          borderColor: theme.palette.primary.main,
+                          color: theme.palette.primary.main,
+                          minWidth: "unset",
+                          padding: "0px 6px",
+                          "&:hover": {
+                            borderColor: theme.palette.primary.light,
+                            color: theme.palette.primary.light,
+                          },
+                        }}
+                        onClick={() => {
+                          setVendorPopup(v);
+                          setCategoryPopup(true);
+                        }}
+                      >
+                        Edit <EditIcon sx={{ fontSize: 12 }} />
+                      </Button>
+                    </Box>
                   </Box>
-                </Box>
-              ))}
-          </Box>
+                ))}
+            </Box>
           </Box>
         )}
 
