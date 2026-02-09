@@ -386,7 +386,7 @@ export default function Home() {
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
-                      {["Image", "Price", "Product Name", "QTY", "Action"].map((h) => (
+                      {["Price", "Product Name", "QTY", "Action"].map((h) => (
                         <TableCell
                           key={h}
                           sx={{
@@ -420,17 +420,6 @@ export default function Home() {
                             cursor: "pointer",
                           }}
                         >
-                          <TableCell sx={{ padding: "4px 8px" }}>
-                            <img
-                              src={product.image || DEFAULT_PRODUCT_IMAGE}
-                              width={35}
-                              height={35}
-                              style={{
-                                borderRadius: 4,
-                                objectFit: "cover",
-                              }}
-                            />
-                          </TableCell>
                           <TableCell
                             sx={{
                               color: theme.palette.success.main,
