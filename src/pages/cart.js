@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { Add, Remove, Delete, ArrowBack } from "@mui/icons-material";
 import LogoutIcon from "@mui/icons-material/Logout";
+import Footer from "../components/Footer";
 import Swal from "sweetalert2";
 import {
   addToCart,
@@ -206,7 +207,7 @@ export default function CartCheckout() {
                 cursor: "pointer",
               }}
             />
-            Wholesale Leville Inc.
+            Beauté Leville Inc.
           </Link>
         </Typography>
         <IconButton onClick={handleLogout} sx={{ color: theme.palette.text.primary }}>
@@ -395,6 +396,7 @@ export default function CartCheckout() {
           </Button>
         </Paper>
       </Box>
+      <Footer />
     </Box>
   );
 }

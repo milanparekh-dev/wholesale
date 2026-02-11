@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
 import CartButton from "/src/components/CartButton";
 import VendorPopup from "/src/components/VendorPopup";
+import Footer from "/src/components/Footer";
 import Loading from "/src/components/Loading";
 import {
   Typography,
@@ -284,7 +285,7 @@ export default function Home() {
             variant="h5"
             sx={{ fontWeight: 700, color: theme.palette.text.primary, alignSelf: "center" }}
           >
-            Wholesale Leville Inc.
+            Beauté Leville Inc.
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <CartButton />
@@ -489,6 +490,7 @@ export default function Home() {
             close={() => setVendorPopup(null)}
           />
         )}
+        <Footer />
       </div>
     </Box>
   );

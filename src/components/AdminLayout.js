@@ -135,7 +135,7 @@ export default function AdminLayout({ children }) {
               variant="h6"
               sx={(theme) => ({ fontWeight: 700, color: theme.palette.text.primary })}
             >
-              Wholesale Leville Inc.
+              Beauté Leville Inc.
             </Typography>
           )}
           <IconButton
