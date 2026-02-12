@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
-import CartButton from "/src/components/CartButton";
+import Header from "/src/components/Header";
 import VendorPopup from "/src/components/VendorPopup";
 import Footer from "/src/components/Footer";
 import Loading from "/src/components/Loading";
@@ -29,7 +29,6 @@ import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import LogoutIcon from "@mui/icons-material/Logout";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
@@ -59,11 +58,6 @@ export default function Home() {
   const containerRef = useRef(null);
   const theme = useTheme();
   const [pageLoading, setPageLoading] = useState(true);
-
-  const handleLogout = () => {
-    localStorage.removeItem("api_token");
-    router.push("/login");
-  };
 
   useEffect(() => {
     const loadProducts = () => {
@@ -268,32 +262,7 @@ export default function Home() {
       }}
     >
       <div>
-        {/* Header */}
-        <Box
-          sx={{
-            background: theme.palette.background.paper,
-            padding: isMobile ? "10px 10px" : "10px 70px",
-            display: "flex",
-            justifyContent: "space-between",
-            boxShadow: "0 2px 10px rgba(4,6,8,0.6)",
-            position: "sticky",
-            top: 0,
-            zIndex: 100,
-          }}
-        >
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: 700, color: theme.palette.text.primary, alignSelf: "center" }}
-          >
-            Beauté Leville Inc.
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <CartButton />
-            <IconButton onClick={handleLogout} sx={{ color: theme.palette.text.primary }}>
-              <LogoutIcon />
-            </IconButton>
-          </Box>
-        </Box>
+        <Header />
 
         {/* Mobile Filters */}
         {isMobile && (

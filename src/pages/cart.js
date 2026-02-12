@@ -14,7 +14,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { Add, Remove, Delete, ArrowBack } from "@mui/icons-material";
-import LogoutIcon from "@mui/icons-material/Logout";
+import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Swal from "sweetalert2";
 import {
@@ -34,11 +34,6 @@ export default function CartCheckout() {
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width:600px)");
   const [loadingQuote, setLoadingQuote] = useState(false);
-
-  const handleLogout = () => {
-    localStorage.removeItem("api_token");
-    router.push("/login");
-  };
 
   const totalPrice = items.reduce(
     (acc, item) => acc + (item.price || 20) * (item.qty || 1),
@@ -171,49 +166,7 @@ export default function CartCheckout() {
         pb: 4,
       }}
     >
-      {/* Header */}
-      <Box
-        sx={{
-          background: theme.palette.background.paper,
-          padding: isMobile ? "10px 15px" : "15px 70px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          boxShadow: "0 18px 36px rgba(4,6,8,0.4)",
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-        }}
-      >
-        <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontWeight: 700 }}>
-          <Link
-            href="/"
-            underline="none"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              color: theme.palette.text.primary,
-            }}
-          >
-            <ArrowBack
-              fontSize="small"
-              sx={{
-                fontSize: isMobile ? "21px" : "25px",
-                background: theme.palette.background.elevated,
-                padding: "4px",
-                borderRadius: "50%",
-                marginRight: "8px",
-                cursor: "pointer",
-              }}
-            />
-            Beauté Leville Inc.
-          </Link>
-        </Typography>
-        <IconButton onClick={handleLogout} sx={{ color: theme.palette.text.primary }}>
-          <LogoutIcon />
-        </IconButton>
-      </Box>
+      <Header />
 
       <Typography
         variant={isMobile ? "h5" : "h4"}
