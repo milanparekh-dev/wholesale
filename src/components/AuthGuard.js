@@ -9,7 +9,16 @@ const AuthGuard = ({ children }) => {
     const dispatch = useDispatch();
     const [isChecking, setIsChecking] = useState(true);
 
-    const publicPaths = ["/", "/login", "/register", "/admin/login"];
+    const publicPaths = [
+    "/", 
+    "/login", 
+    "/register", 
+    "/admin/login",
+    "/about-us",
+    "/shipping-policy",
+    "/terms-and-conditions",
+    "/payment-policy"
+  ];
 
     useEffect(() => {
         if (!router.isReady) return;
