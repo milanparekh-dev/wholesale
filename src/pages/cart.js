@@ -39,7 +39,7 @@ export default function CartCheckout() {
     (acc, item) => acc + (item.price || 20) * (item.qty || 1),
     0
   );
-  const totalWithShipping = totalPrice + 5;
+  const totalWithShipping = totalPrice;
 
   useEffect(() => {
     const originalBg = document.body.style.backgroundColor;
@@ -313,11 +313,6 @@ export default function CartCheckout() {
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
             <Typography>Items ({items.length})</Typography>
             <Typography>${totalPrice.toFixed(2)}</Typography>
-          </Box>
-
-          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-            <Typography>Shipping</Typography>
-            <Typography>$5.00</Typography>
           </Box>
 
           <Divider sx={{ mb: 2, borderColor: theme.palette.divider }} />

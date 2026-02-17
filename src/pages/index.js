@@ -1,7 +1,5 @@
-import { useEffect } from "react";
-import { useRouter } from "next/router";
-import ProductsPage from "./products";
+import LandingPage from "../components/LandingPage";
 
 export default function IndexPage() {
-  return <ProductsPage />;
+  return <LandingPage />;
 }

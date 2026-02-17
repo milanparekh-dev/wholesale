@@ -9,7 +9,7 @@ const AuthGuard = ({ children }) => {
     const dispatch = useDispatch();
     const [isChecking, setIsChecking] = useState(true);
 
-    const publicPaths = ["/login", "/register", "/admin/login"];
+    const publicPaths = ["/", "/login", "/register", "/admin/login"];
 
     useEffect(() => {
         if (!router.isReady) return;
@@ -37,9 +37,10 @@ const AuthGuard = ({ children }) => {
                 } else {
                     await router.replace("/login");
                 }
-            } else {
-                setIsChecking(false);
             }
+            
+            // Always set isChecking to false after auth check completes
+            setIsChecking(false);
         };
 
         checkAuth();

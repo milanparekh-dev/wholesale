@@ -148,7 +148,7 @@ export default function LoginPage() {
         localStorage.setItem("api_token", res?.data?.api_token);
         localStorage.setItem("user_data", JSON.stringify(res?.data));
         dispatch(loginAction(res?.data));
-        router.push("/");
+        router.push("/products");
       }
     } catch (error) {
       if (error?.response?.data?.data?.status === "phone_not_verified") {
@@ -176,7 +176,7 @@ export default function LoginPage() {
         localStorage.setItem("api_token", res?.data?.user?.api_token);
         localStorage.setItem("user_data", JSON.stringify(res?.data?.user));
         dispatch(loginAction(res?.data?.user));
-        router.push("/");
+        router.push("/products");
       }
     } catch {
       toast.error("Invalid OTP");
