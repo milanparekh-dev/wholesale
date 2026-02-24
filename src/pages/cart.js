@@ -148,7 +148,7 @@ export default function CartCheckout() {
         color: theme.palette.text.primary,
       }).then(() => {
         dispatch(clearCart());
-        router.push("/");
+        router.push("/products");
       });
     } catch (error) {
       toast.error(error?.message || "Unable to send quote!");
