@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, IconButton, useMediaQuery } from "@mui/material";
 import { useRouter } from "next/router";
 import NextLink from "next/link";
@@ -10,6 +10,13 @@ const Header = () => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery("(max-width:768px)");
+  const [logoHref, setLogoHref] = useState("/");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem("api_token")) {
+      setLogoHref("/products");
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("api_token");
@@ -29,7 +36,7 @@ const Header = () => {
         zIndex: 100,
       }}
     >
-      <NextLink href="/" passHref legacyBehavior>
+      <NextLink href={logoHref} passHref legacyBehavior>
         <Typography
           component="a"
           variant="h5"
