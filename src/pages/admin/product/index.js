@@ -30,7 +30,8 @@ import AdminLayout from "/src/components/AdminLayout";
 import FilterDropdown from "/src/components/FilterDropdown";
 import ThickCircleLoader from "/src/components/Loading";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import { DEFAULT_PRODUCT_IMAGE } from "/src/utility/constants";
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 
 export default function Home() {
   const [search, setSearch] = useState("");
@@ -56,7 +57,7 @@ export default function Home() {
     try {
       const res = await adminApi.get("/api/categories/");
       setCategoryList(res.data || []);
-    } catch { }
+    } catch {}
   };
 
   const fetchBrandsList = async () => {
@@ -66,7 +67,7 @@ export default function Home() {
 
       const brandNames = res.data.map((b) => b.name);
       setBrands(brandNames.sort());
-    } catch { }
+    } catch {}
   };
 
   const fetchVendors = async () => {
@@ -83,37 +84,72 @@ export default function Home() {
     }
   };
 
-  const fetchProducts = useCallback(
-    async () => {
-      try {
-        setLoading(true);
-        const selectedBrandIds = selectedBrands
-          .map((name) => {
-            const brand = brandsList.find((b) => b.name === name);
-            return brand?._id;
-          })
-          .filter(Boolean);
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const selectedBrandIds = selectedBrands
+        .map((name) => {
+          const brand = brandsList.find((b) => b.name === name);
+          return brand?._id;
+        })
+        .filter(Boolean);
 
-        const brandParam =
-          selectedBrandIds.length > 0
-            ? `&brands=${selectedBrandIds.join(",")}`
-            : "";
-        const res = await adminApi.get(
-          `/api/products/?page=${page}&per_page=${rowsPerPage}&search=${encodeURIComponent(
-            search
-          )}${brandParam}`
-        );
+      const brandParam =
+        selectedBrandIds.length > 0
+          ? `&brands=${selectedBrandIds.join(",")}`
+          : "";
+      const res = await adminApi.get(
+        `/api/products/?page=${page}&per_page=${rowsPerPage}&search=${encodeURIComponent(
+          search,
+        )}${brandParam}`,
+      );
 
-        setProducts(res.data.data || []);
-        setTotal(res.data.total || 0);
-      } catch {
-        toast.error("Unable to fetch products");
-      } finally {
-        setLoading(false);
+      setProducts(res.data.data || []);
+      setTotal(res.data.total || 0);
+    } catch {
+      toast.error("Unable to fetch products");
+    } finally {
+      setLoading(false);
+    }
+  }, [page, rowsPerPage, search, selectedBrands, brandsList]);
+
+  const deleteProduct = async (p) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This product will be permanently deleted.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const response = await adminApi.delete(`/api/products/${p?._id}`);
+
+      if (response?.status === "success") {
+        fetchProducts();
+
+        Swal.fire({
+          title: "Deleted!",
+          text: "The product has been removed.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire("Error", "Failed to delete the product.", "error");
       }
-    },
-    [page, rowsPerPage, search, selectedBrands, brandsList]
-  );
+    } catch (error) {
+      Swal.fire(
+        "Error",
+        error.response?.data?.message || "Something went wrong while deleting.",
+        "error",
+      );
+    }
+  };
 
   const reloadProducts = () => {
     setPage(1);
@@ -157,9 +193,13 @@ export default function Home() {
       const formData = new FormData();
       formData.append("file", importFile);
 
-      const res = await adminApi.post("/api/admin/products/import-excel", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await adminApi.post(
+        "/api/admin/products/import-excel",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
 
       toast.success(res?.data?.message || "Import submitted");
       setImportPopup(false);
@@ -173,30 +213,32 @@ export default function Home() {
     }
   };
 
+  const cardBg = {
+    background: "#181819",
+    boxShadow:
+      "0 0 0 1px rgba(255, 255, 255, 0.04), 0 0 18px rgba(0, 0, 0, 0.7)",
+  };
+
   return (
     <AdminLayout>
       <Box
         sx={{
-          background: theme.palette.background.default,
           minHeight: "100vh",
           p: 2,
-          pt: 0,
           color: theme.palette.text.primary,
         }}
       >
         {/* FILTER BAR */}
         <Box
           sx={{
+            ...cardBg,
             display: "flex",
             gap: 2,
             alignItems: "center",
             flexWrap: "wrap",
             mb: 2,
-            p: "5px 10px",
-            background: theme.palette.background.paper,
+            p: "10px",
             borderRadius: "4px",
-            border: `1px solid ${theme.palette.divider}`,
-            boxShadow: "0px 12px 30px rgba(4,6,8,0.55)",
           }}
         >
           <TextField
@@ -214,7 +256,9 @@ export default function Home() {
                 background: theme.palette.background.subtle,
                 "& fieldset": { border: `1px solid ${theme.palette.divider}` },
                 "&:hover fieldset": { borderColor: theme.palette.primary.main },
-                "&.Mui-focused fieldset": { borderColor: theme.palette.primary.main },
+                "&.Mui-focused fieldset": {
+                  borderColor: theme.palette.primary.main,
+                },
               },
               "& .MuiInputLabel-root": { color: theme.palette.text.secondary },
             }}
@@ -287,10 +331,8 @@ export default function Home() {
           <TableContainer
             component={Paper}
             sx={{
-              background: theme.palette.background.paper,
+              ...cardBg,
               borderRadius: "4px",
-              border: `1px solid ${theme.palette.divider}`,
-              boxShadow: "0px 12px 30px rgba(4,6,8,0.55)",
             }}
           >
             <Table stickyHeader>
@@ -323,12 +365,15 @@ export default function Home() {
                 {products.map((p) => (
                   <TableRow
                     key={p.upc}
-                    sx={{ "&:hover": { background: "rgba(138, 180, 248, 0.08)" } }}
+                    sx={{
+                      "&:hover": { background: "rgba(138, 180, 248, 0.08)" },
+                    }}
                   >
                     <TableCell sx={{ padding: "2px 8px" }}>
                       <img
                         src={
-                          p.image || DEFAULT_PRODUCT_IMAGE
+                          p.image ||
+                          "https://res.cloudinary.com/dbxjpuupy/image/upload/v1765398958/Gemini_Generated_Image_fspkkgfspkkgfspk_se19ha.png"
                         }
                         width={35}
                         height={35}
@@ -340,16 +385,36 @@ export default function Home() {
                         onClick={() => setEnlargeImg(p.image)}
                       />
                     </TableCell>
-                    <TableCell sx={{ color: theme.palette.text.primary, padding: "2px 8px" }}>
+                    <TableCell
+                      sx={{
+                        color: theme.palette.text.primary,
+                        padding: "2px 8px",
+                      }}
+                    >
                       {p.brand}
                     </TableCell>
-                    <TableCell sx={{ color: theme.palette.text.primary, padding: "2px 8px" }}>
+                    <TableCell
+                      sx={{
+                        color: theme.palette.text.primary,
+                        padding: "2px 8px",
+                      }}
+                    >
                       {p.title}
                     </TableCell>
-                    <TableCell sx={{ color: theme.palette.text.secondary, padding: "2px 8px" }}>
+                    <TableCell
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        padding: "2px 8px",
+                      }}
+                    >
                       {p.category}
                     </TableCell>
-                    <TableCell sx={{ color: theme.palette.text.secondary, padding: "2px 8px" }}>
+                    <TableCell
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        padding: "2px 8px",
+                      }}
+                    >
                       {p.gender}
                     </TableCell>
                     <TableCell sx={{ padding: "4px 8px" }}>
@@ -359,7 +424,9 @@ export default function Home() {
                           textTransform: "none",
                           background: theme.palette.primary.main,
                           color: theme.palette.background.default,
-                          "&:hover": { background: theme.palette.primary.light },
+                          "&:hover": {
+                            background: theme.palette.primary.light,
+                          },
                         }}
                         onClick={() => {
                           setVendorPopup(p);
@@ -367,6 +434,21 @@ export default function Home() {
                         }}
                       >
                         Edit
+                      </Button>
+                      <Button
+                        variant="contained"
+                        sx={{
+                          textTransform: "none",
+                          background: "#b21313d3",
+                          color: "#fff",
+                          ml: 1,
+                          "&:hover": { background: "red" },
+                        }}
+                        onClick={() => {
+                          deleteProduct(p);
+                        }}
+                      >
+                        Delete
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -397,9 +479,15 @@ export default function Home() {
                 background: theme.palette.background.subtle,
                 borderRadius: "8px",
                 "& .MuiSelect-icon": { color: theme.palette.text.primary },
-                "& .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.divider },
-                "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.primary.main },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.primary.main },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: theme.palette.divider,
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: theme.palette.primary.main,
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: theme.palette.primary.main,
+                },
               }}
             >
               {[10, 20, 50, 100].map((n) => (
@@ -426,7 +514,9 @@ export default function Home() {
               "& .MuiPaginationItem-root:hover": {
                 backgroundColor: "rgba(138, 180, 248, 0.18)",
               },
-              "& .MuiPaginationItem-icon": { color: theme.palette.text.secondary },
+              "& .MuiPaginationItem-icon": {
+                color: theme.palette.text.secondary,
+              },
             }}
           />
         </Box>
@@ -446,7 +536,13 @@ export default function Home() {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={importPopup} onClose={() => { setImportPopup(false); setImportFile(null); }}>
+        <Dialog
+          open={importPopup}
+          onClose={() => {
+            setImportPopup(false);
+            setImportFile(null);
+          }}
+        >
           <DialogTitle>Import products from Excel</DialogTitle>
           <DialogContent
             sx={{
@@ -470,8 +566,15 @@ export default function Home() {
                 onChange={(e) => setImportFile(e.target.files?.[0] || null)}
                 style={{ width: "100%" }}
               />
-              <Box sx={{ mt: 1, color: theme.palette.text.secondary, fontSize: 14 }}>
-                Only .xlsx files are allowed. Please use the NYPX_clean.xlsx format; validation is handled by the backend.
+              <Box
+                sx={{
+                  mt: 1,
+                  color: theme.palette.text.secondary,
+                  fontSize: 14,
+                }}
+              >
+                Only .xlsx files are allowed. Please use the NYPX_clean.xlsx
+                format; validation is handled by the backend.
               </Box>
               {importFile && (
                 <Box sx={{ mt: 1, fontSize: 14 }}>
@@ -491,7 +594,13 @@ export default function Home() {
             </Button>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button onClick={() => { setImportPopup(false); setImportFile(null); }} sx={{ textTransform: "none" }}>
+            <Button
+              onClick={() => {
+                setImportPopup(false);
+                setImportFile(null);
+              }}
+              sx={{ textTransform: "none" }}
+            >
               Cancel
             </Button>
             <Button
