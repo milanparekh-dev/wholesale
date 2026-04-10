@@ -17,11 +17,9 @@ import { toast } from "react-toastify";
 import adminApi from "/src/utility/adminApi";
 
 const MEMBERSHIP_OPTIONS = [
-  { value: "wholesale", label: "Wholesale" },
-  { value: "silver",    label: "Silver"    },
-  { value: "gold",      label: "Gold"      },
-  { value: "platinum",  label: "Platinum"  },
-  { value: "vip",       label: "VIP"       },
+  { value: "wholesale",    label: "Wholesale"    },
+  { value: "vip_standard", label: "VIP Standard" },
+  { value: "vip_premium",  label: "VIP Premium"  },
 ];
 
 export default function BuyerEditPopUp({ product, close }) {
