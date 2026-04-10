@@ -46,7 +46,7 @@ export default function ProductEditPopUp({
   /* ---------------- VENDOR STATE ---------------- */
   const [vendors, setVendors] = useState(
     product?.vendors?.length
-      ? JSON.parse(product.vendors)
+      ? (typeof product.vendors === "string" ? JSON.parse(product.vendors) : product.vendors)
       : [
         {
           vendor_id: "",

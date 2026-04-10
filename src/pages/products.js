@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useDispatch } from "react-redux";
 import Header from "/src/components/Header";
 import VendorPopup from "/src/components/VendorPopup";
 import Footer from "/src/components/Footer";
@@ -33,6 +33,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import InfiniteScroll from "react-infinite-scroll-component";
+import adminApi from "/src/utility/adminApi";
 import { getMembershipPrice } from "../utility/pricing";
 import { DEFAULT_PRODUCT_IMAGE } from "../utility/constants";
 import batch1 from "/src/products/products_mapped_batch_1.json";
@@ -42,136 +43,127 @@ import batch4 from "/src/products/products_mapped_batch_4.json";
 import batch5 from "/src/products/products_mapped_batch_5.json";
 
 export default function Home() {
-  const router = useRouter();
-  const membershipLevel = useSelector((state) => state.auth.membership_level);
   const [search, setSearch] = useState("");
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [vendorPopup, setVendorPopup] = useState(null);
   const [openSections, setOpenSections] = useState({ brand: true, upc: false });
   const [brands, setBrands] = useState([]);
+  const [userMe, setUserMe] = useState({});
+  const membershipLevel = userMe?.membership_level;
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [productsList, setProductsList] = useState([]);
+
+  const dispatch = useDispatch();
   const isMobile = useMediaQuery("(max-width:768px)");
   const containerRef = useRef(null);
   const theme = useTheme();
-  const [pageLoading, setPageLoading] = useState(true);
 
-  useEffect(() => {
-    const loadProducts = () => {
-      try {
-        setLoading(true);
-        const allBatches = [...batch1, ...batch2, ...batch3, ...batch4, ...batch5];
-        const parsedData = allBatches.map((item) => ({
-          ...item,
-          brand_name: item.brand, // Map brand to brand_name
-          vendors: item.vendors || [],
-        }));
-
-        const normalizedData = parsedData.map((item) => ({
-          ...item,
-          vendors: Array.isArray(item.vendors)
-            ? item.vendors.map((v) => ({
-              ...v,
-              price: Number(v.price) || 0,
-              qty: Number(v.qty) || 0,
-            }))
-            : [],
-        }));
-
-        setProductsList(normalizedData);
-      } catch (error) {
-        toast.error("Unable to load products!");
-      } finally {
-        setLoading(false);
-        setPageLoading(false);
-      }
-    };
-    loadProducts();
-  }, []);
-
-  // Fetch brands
-  const fetchBrands = async () => {
-    console.log("productsList", productsList);
-
+  const fetchBrands = useCallback(async () => {
     try {
-      setLoading(true);
-      const response = [...new Set(productsList?.map((p) => p.brand_name))];
-      const sortedBrands = response
-        ? [...response].sort((a, b) => a.localeCompare(b))
-        : [];
+      const response = await adminApi.get("/api/brands/");
+      const brandsData = response?.data || [];
+      const sortedBrands = brandsData.sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
       setBrands(sortedBrands);
     } catch (error) {
       toast.error(error.response?.data?.message || "Unable to fetch brands!");
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
 
+  // Fetch user
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await adminApi.get("/api/user-me");
+        setUserMe(res.data || {});
+      } catch {
+        toast.error("Failed to fetch user data");
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Fetch products
   const fetchProducts = useCallback(
     async (_page = 1, append = false) => {
       try {
-        setLoading(true);
         const PAGE_SIZE = 50;
-        const normalizedSearch = search.trim().toLowerCase();
+        const normalizedSearch = search.trim();
 
-        const allFiltered = productsList.filter((p) => {
-          const brandMatch = selectedBrands.length
-            ? selectedBrands.includes(p.brand_name)
-            : true;
-          const titleMatch = normalizedSearch
-            ? p.title?.toLowerCase().includes(normalizedSearch)
-            : true;
-          const totalQty = p.vendors?.reduce((s, v) => s + (v.qty || 0), 0);
-          if (totalQty > 0) {
-            console.log("totalQty", totalQty);
-          }
-
-          return brandMatch && titleMatch && totalQty > 0;
+        const params = new URLSearchParams({
+          page: _page,
+          per_page: PAGE_SIZE,
+          search: normalizedSearch,
         });
 
-        const start = (_page - 1) * PAGE_SIZE;
-        const end = start + PAGE_SIZE;
-        const newProducts = allFiltered.slice(start, end);
+        if (selectedBrands.length > 0) {
+          params.set("brands", selectedBrands.join(","));
+        }
 
-        setProducts((prev) =>
-          append ? [...prev, ...newProducts] : newProducts
+        const response = await adminApi.get(
+          `/api/products?${params.toString()}`,
         );
-        setHasMore(end < allFiltered.length);
+
+        const body = response?.data || {};
+        const responseData = body || {};
+        const newProductsBatch = responseData.data || [];
+        const total = parseInt(responseData.total || 0, 10);
+
+        const normalizedNewProducts = newProductsBatch.map((item) => ({
+          ...item,
+          title: item.title || item.name || "Unknown Product",
+          vendors: Array.isArray(item.vendors)
+            ? item.vendors.map((v) => ({
+                ...v,
+                price: Number(v.price) || 0,
+                qty: Number(v.qty) || 0,
+              }))
+            : [],
+        }));
+
+        setProducts((prev) => {
+          const updated = append
+            ? [...prev, ...normalizedNewProducts]
+            : normalizedNewProducts;
+          // Calculate haveMore based on the updated length and the total from API
+          setHasMore(
+            updated.length < total && normalizedNewProducts.length > 0,
+          );
+          return updated;
+        });
+
         setPage(_page);
       } catch (error) {
+        console.error("Error fetching products:", error);
         toast.error("Unable to fetch products!");
         setHasMore(false);
-      } finally {
-        setLoading(false);
       }
     },
-    [productsList, search, selectedBrands]
+    [search, selectedBrands],
   );
 
   useEffect(() => {
     fetchBrands();
     fetchProducts(1, false);
-    setPage(1);
-  }, [productsList]);
+  }, [fetchBrands, fetchProducts]);
 
   useEffect(() => {
     setPage(1);
     setHasMore(true);
     setProducts([]);
-    const id = setTimeout(() => fetchProducts(1, false), 0);
-    return () => clearTimeout(id);
+    fetchProducts(1, false);
   }, [search, selectedBrands]);
 
   const fetchNext = () => fetchProducts(page + 1, true);
 
-  const handleBrandChange = useCallback((brand) => {
+  const handleBrandChange = useCallback((brandId) => {
     setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
+      prev.includes(brandId)
+        ? prev.filter((id) => id !== brandId)
+        : [...prev, brandId],
     );
   }, []);
 
@@ -233,16 +225,16 @@ export default function Home() {
           <FormGroup>
             {brands.map((b) => (
               <FormControlLabel
-                key={b}
+                key={b._id}
                 control={
                   <Checkbox
-                    checked={selectedBrands.includes(b)}
-                    onChange={() => handleBrandChange(b)}
+                    checked={selectedBrands.includes(b._id)}
+                    onChange={() => handleBrandChange(b._id)}
                   />
                 }
                 label={
                   <Typography sx={{ color: theme.palette.text.secondary }}>
-                    {b}
+                    {b.name}
                   </Typography>
                 }
               />
