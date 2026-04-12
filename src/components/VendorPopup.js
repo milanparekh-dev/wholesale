@@ -38,9 +38,16 @@ export default function VendorPopup({ product, close }) {
 
   const availableVendors = product.vendors || [];
   const totalQty = availableVendors.reduce((sum, v) => sum + (Number(v.qty) || 0), 0);
-  const lowestPrice = Math.min(
-    ...availableVendors.map((v) => getMembershipPrice(v, membershipLevel))
-  );
+
+  // Find the vendor whose membership-resolved price is the lowest.
+  // This vendor's name is stored in the cart so the RFQ routes correctly.
+  const bestVendor = availableVendors.reduce((best, v) => {
+    const p = getMembershipPrice(v, membershipLevel);
+    if (best === null || p < getMembershipPrice(best, membershipLevel)) return v;
+    return best;
+  }, null);
+
+  const lowestPrice = bestVendor ? getMembershipPrice(bestVendor, membershipLevel) : 0;
 
   const handleQtyBlur = () => {
     let num = parseInt(selectedQty);
@@ -63,15 +70,11 @@ export default function VendorPopup({ product, close }) {
         upc: product.upc,
         title: product.title,
         brand: product.brand,
-        sku:
-          product.vendors && product.vendors.length
-            ? product.vendors[0].sku
-            : "",
-        vendor_name:
-          product.vendors && product.vendors.length
-            ? product.vendors[0].name
-            : "",
+        // Use the SKU and vendor name from the best-priced vendor for this membership tier
+        sku: bestVendor?.sku || (product.vendors?.[0]?.sku ?? ""),
+        vendor_name: bestVendor?.name || (product.vendors?.[0]?.name ?? ""),
         qty: numQty,
+        // Store the membership-resolved price — this is what goes into RFQ unit_price
         price: lowestPrice,
       })
     );

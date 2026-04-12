@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Header from "/src/components/Header";
 import VendorPopup from "/src/components/VendorPopup";
 import Footer from "/src/components/Footer";
@@ -118,7 +118,10 @@ export default function Home() {
           vendors: Array.isArray(item.vendors)
             ? item.vendors.map((v) => ({
                 ...v,
+                // Keep all price tiers intact so getMembershipPrice can resolve them
                 price: Number(v.price) || 0,
+                vipStandardPrice: Number(v.vipStandardPrice) || 0,
+                vipPremiumPrice: Number(v.vipPremiumPrice) || 0,
                 qty: Number(v.qty) || 0,
               }))
             : [],
