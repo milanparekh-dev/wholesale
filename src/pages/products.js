@@ -31,7 +31,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+
 import InfiniteScroll from "react-infinite-scroll-component";
 import adminApi from "/src/utility/adminApi";
 import { getMembershipPrice } from "../utility/pricing";
@@ -48,8 +48,8 @@ export default function Home() {
   const [vendorPopup, setVendorPopup] = useState(null);
   const [openSections, setOpenSections] = useState({ brand: true, upc: false });
   const [brands, setBrands] = useState([]);
-  const [userMe, setUserMe] = useState({});
-  const membershipLevel = userMe?.membership_level;
+  // Read membership level from Redux (populated by authSlice on login)
+  const membershipLevel = useSelector((state) => state.auth.membership_level);
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
@@ -73,18 +73,6 @@ export default function Home() {
     }
   }, []);
 
-  // Fetch user
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await adminApi.get("/api/user-me");
-        setUserMe(res.data || {});
-      } catch {
-        toast.error("Failed to fetch user data");
-      }
-    };
-    fetchUser();
-  }, []);
 
   // Fetch products
   const fetchProducts = useCallback(
