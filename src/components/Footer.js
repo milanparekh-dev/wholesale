@@ -54,6 +54,27 @@ const Footer = () => {
                   +1(263)999-7776
                 </Link>
               </Box>
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <EmailIcon sx={{ color: "#ccc", fontSize: 20, mt: "1px" }} />
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
+                  <Link
+                    href="mailto:sales@leville.ca"
+                    color="inherit"
+                    underline="hover"
+                    sx={{ fontSize: "0.85rem", color: "#ccc" }}
+                  >
+                    sales@leville.ca
+                  </Link>
+                  <Link
+                    href="mailto:support@leville.ca"
+                    color="inherit"
+                    underline="hover"
+                    sx={{ fontSize: "0.85rem", color: "#ccc" }}
+                  >
+                    support@leville.ca
+                  </Link>
+                </Box>
+              </Box>
             </Box>
           </Grid>
 
