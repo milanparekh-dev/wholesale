@@ -75,9 +75,30 @@ const LandingPage = () => {
                   maxWidth: "500px",
                 }}
               >
-                A dedicated B2B beauty business partnering with brands and retailers to elevate the modern beauty experience.
-              </Typography>
-              <Button
+                 Independent wholesale distributor of authentic designer fragrances and beauty products.
+                 Supplying retailers across Canada with competitive pricing, verified sourcing, and reliable inventory.
+               </Typography>
+               <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0, mb: 5 }}>
+                 {[
+                   "Authentic, brand-name products",
+                   "UPC-verified inventory",
+                   "Established supplier network",
+                   "Serving retailers and resellers",
+                 ].map((item) => (
+                   <Box
+                     component="li"
+                     key={item}
+                     sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+                   >
+                     <Box component="span" sx={{ color: "#C850C0", fontWeight: 700, fontSize: "1.1rem" }}>✔</Box>
+                     <Typography variant="body2" sx={{ color: "#CCCCCC", fontSize: { xs: "0.95rem", md: "1rem" } }}>
+                       {item}
+                     </Typography>
+                   </Box>
+                 ))}
+               </Box>
+               {/* Login Button */}
+               <Button
                 variant="contained"
                 size="large"
                 onClick={() => router.push("/login")}
