@@ -145,10 +145,10 @@ export default function Home() {
     [debouncedSearch, selectedBrands],
   );
 
+  // Only fetch brands on mount — products are handled by the effect below
   useEffect(() => {
     fetchBrands();
-    fetchProducts(1, false);
-  }, [fetchBrands, fetchProducts]);
+  }, []);
 
   useEffect(() => {
     setPage(1);
