@@ -44,6 +44,7 @@ import batch5 from "/src/products/products_mapped_batch_5.json";
 
 export default function Home() {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [vendorPopup, setVendorPopup] = useState(null);
   const [openSections, setOpenSections] = useState({ brand: true, upc: false });
@@ -59,6 +60,14 @@ export default function Home() {
   const isMobile = useMediaQuery("(max-width:768px)");
   const containerRef = useRef(null);
   const theme = useTheme();
+
+  // Debounce: wait 500ms after the user stops typing before triggering the API
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
 
   const fetchBrands = useCallback(async () => {
     try {
@@ -79,7 +88,7 @@ export default function Home() {
     async (_page = 1, append = false) => {
       try {
         const PAGE_SIZE = 50;
-        const normalizedSearch = search.trim();
+        const normalizedSearch = debouncedSearch;
 
         const params = new URLSearchParams({
           page: _page,
@@ -133,7 +142,7 @@ export default function Home() {
         setHasMore(false);
       }
     },
-    [search, selectedBrands],
+    [debouncedSearch, selectedBrands],
   );
 
   useEffect(() => {
@@ -146,7 +155,7 @@ export default function Home() {
     setHasMore(true);
     setProducts([]);
     fetchProducts(1, false);
-  }, [search, selectedBrands]);
+  }, [debouncedSearch, selectedBrands]);
 
   const fetchNext = () => fetchProducts(page + 1, true);
 
