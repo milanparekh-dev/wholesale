@@ -46,8 +46,9 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [vendorPopup, setVendorPopup] = useState(null);
-  const [openSections, setOpenSections] = useState({ brand: true, upc: false });
+  const [openSections, setOpenSections] = useState({ brand: true, productType: false, upc: false });
   const [brands, setBrands] = useState([]);
   // Read membership level from Redux (populated by authSlice on login)
   const membershipLevel = useSelector((state) => state.auth.membership_level);
@@ -55,6 +56,14 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  const PRODUCT_TYPES = [
+    { value: "Perfume", label: "Perfumes" },
+    { value: "Gift Set", label: "Gift Sets" },
+    { value: "Tester", label: "Testers" },
+    { value: "Cosmetic", label: "Cosmetics" },
+    { value: "PROMOTION", label: "PROMOTION" },
+  ];
 
   const dispatch = useDispatch();
   const isMobile = useMediaQuery("(max-width:768px)");
@@ -100,6 +109,10 @@ export default function Home() {
           params.set("brands", selectedBrands.join(","));
         }
 
+        if (selectedCategories.length > 0) {
+          params.set("category", selectedCategories.join(","));
+        }
+
         const response = await adminApi.get(
           `/api/products?${params.toString()}`,
         );
@@ -142,7 +155,7 @@ export default function Home() {
         setHasMore(false);
       }
     },
-    [debouncedSearch, selectedBrands],
+    [debouncedSearch, selectedBrands, selectedCategories],
   );
 
   // Only fetch brands on mount — products are handled by the effect below
@@ -155,7 +168,7 @@ export default function Home() {
     setHasMore(true);
     setProducts([]);
     fetchProducts(1, false);
-  }, [debouncedSearch, selectedBrands]);
+  }, [debouncedSearch, selectedBrands, selectedCategories]);
 
   const fetchNext = () => fetchProducts(page + 1, true);
 
@@ -167,9 +180,18 @@ export default function Home() {
     );
   }, []);
 
+  const handleCategoryChange = useCallback((categoryValue) => {
+    setSelectedCategories((prev) =>
+      prev.includes(categoryValue)
+        ? prev.filter((c) => c !== categoryValue)
+        : [...prev, categoryValue],
+    );
+  }, []);
+
   const handleResetFilters = useCallback(() => {
     setSearch("");
     setSelectedBrands([]);
+    setSelectedCategories([]);
   }, []);
 
   const toggleSection = useCallback((key) => {
@@ -177,7 +199,7 @@ export default function Home() {
   }, []);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const hasActiveFilters = search || selectedBrands.length > 0;
+  const hasActiveFilters = search || selectedBrands.length > 0 || selectedCategories.length > 0;
 
   const FilterContentInner = (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -235,6 +257,48 @@ export default function Home() {
                 label={
                   <Typography sx={{ color: theme.palette.text.secondary }}>
                     {b.name}
+                  </Typography>
+                }
+              />
+            ))}
+          </FormGroup>
+        </Box>
+      </Collapse>
+
+      {/* Product Type Filter */}
+      <Box
+        onClick={() => toggleSection("productType")}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          cursor: "pointer",
+          background: "rgba(138, 180, 248, 0.12)",
+          borderRadius: "4px",
+          padding: "8px 10px",
+          border: `1px solid ${theme.palette.primary.main}40`,
+        }}
+      >
+        <Typography sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
+          Product Type
+        </Typography>
+        {openSections.productType ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+      </Box>
+      <Collapse in={openSections.productType}>
+        <Box sx={{ pl: 1 }}>
+          <FormGroup>
+            {PRODUCT_TYPES.map((pt) => (
+              <FormControlLabel
+                key={pt.value}
+                control={
+                  <Checkbox
+                    checked={selectedCategories.includes(pt.value)}
+                    onChange={() => handleCategoryChange(pt.value)}
+                  />
+                }
+                label={
+                  <Typography sx={{ color: theme.palette.text.secondary }}>
+                    {pt.label}
                   </Typography>
                 }
               />
