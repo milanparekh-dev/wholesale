@@ -348,7 +348,7 @@ export default function Home() {
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
-                      {["Price", "Product Name", "QTY", "Action"].map((h) => (
+                      {["Price", "Product Name", "Action"].map((h) => (
                         <TableCell
                           key={h}
                           sx={{
@@ -393,15 +393,20 @@ export default function Home() {
                           </TableCell>
                           <TableCell sx={{ padding: "4px 12px" }}>
                             {product.title}
-                          </TableCell>
-                          <TableCell
-                            sx={{
-                              color: totalQty > 0 ? theme.palette.success.main : theme.palette.error.main,
-                              fontWeight: 600,
-                              padding: "4px 12px",
-                            }}
-                          >
-                            {totalQty}
+                            {totalQty < 100 && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  display: "block",
+                                  color: theme.palette.error.main,
+                                  fontWeight: 600,
+                                  fontSize: "0.7rem",
+                                  mt: 0.25,
+                                }}
+                              >
+                                Low Stock
+                              </Typography>
+                            )}
                           </TableCell>
                           <TableCell sx={{ padding: "4px 12px" }}>
                             <Button
