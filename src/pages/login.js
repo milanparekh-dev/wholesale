@@ -234,8 +234,8 @@ export default function LoginPage() {
     >
       <Paper
         sx={{
-          width: { xs: "100%", md: 850 },
-          minHeight: 520,
+          width: { xs: "100%", sm: 450 },
+          minHeight: { xs: "auto", sm: 520 },
           borderRadius: 3,
           overflow: "hidden",
           display: "flex",
@@ -244,45 +244,6 @@ export default function LoginPage() {
           boxShadow: "0 28px 60px rgba(4,6,8,0.55)",
         }}
       >
-        {/* Left */}
-        <Box
-          sx={{
-            flex: 1,
-            display: { xs: "none", md: "flex" },
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundImage:
-              "url(https://res.cloudinary.com/dbxjpuupy/image/upload/v1766603718/ChatGPT_Image_Dec_25_2025_12_45_14_AM_iuxzup.png)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            color: theme.palette.common.white,
-            px: 4,
-            textAlign: "center",
-            position: "relative",
-          }}
-        >
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75))",
-            }}
-          />
-          <Box sx={{ position: "relative" }}>
-            <Typography fontSize={18} fontWeight={600}>
-              Beauté Leville Inc.
-            </Typography>
-            <Typography fontSize={32} fontWeight={700}>
-              Welcome Back
-            </Typography>
-            <Typography sx={{ mt: 1, opacity: 0.85 }}>
-              Trade premium fragrances with ease.
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Right side */}
         <Box
           sx={{
             flex: 1,
