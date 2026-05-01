@@ -48,7 +48,7 @@ export default function Home() {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [vendorPopup, setVendorPopup] = useState(null);
-  const [openSections, setOpenSections] = useState({ brand: true, productType: false, upc: false });
+  const [openSections, setOpenSections] = useState({ brand: false, productType: false, upc: false });
   const [brands, setBrands] = useState([]);
   // Read membership level from Redux (populated by authSlice on login)
   const membershipLevel = useSelector((state) => state.auth.membership_level);
