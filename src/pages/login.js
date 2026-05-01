@@ -268,6 +268,9 @@ export default function LoginPage() {
                   gap: 20,
                 }}
               >
+                <Typography fontSize={18} fontWeight={600} textAlign="center" color="primary.main">
+                  Beauté Leville Inc.
+                </Typography>
                 <Typography fontSize={24} fontWeight={700} textAlign="center">
                   Login
                 </Typography>
