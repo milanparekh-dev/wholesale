@@ -457,7 +457,7 @@ export default function Home() {
                           </TableCell>
                           <TableCell sx={{ padding: "4px 12px" }}>
                             {product.title}
-                            {totalQty < 100 && (
+                            {totalQty < 24 && (
                               <Typography
                                 variant="caption"
                                 sx={{
