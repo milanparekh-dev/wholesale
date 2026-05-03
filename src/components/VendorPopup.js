@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../store/cartSlice";
 import { getMembershipPrice } from "../utility/pricing";
@@ -99,6 +100,7 @@ export default function VendorPopup({ product, close }) {
       <Paper
         elevation={6}
         sx={{
+          position: "relative",
           width: isMobile ? "95%" : "80%",
           maxWidth: 700,
           maxHeight: "90vh",
@@ -111,6 +113,37 @@ export default function VendorPopup({ product, close }) {
           border: `1px solid ${theme.palette.divider}`,
         }}
       >
+        {/* Google Search UPC Link - Top Right Corner */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: isMobile ? 12 : 16,
+            right: isMobile ? 12 : 16,
+            zIndex: 10,
+          }}
+        >
+          <a
+            href={`https://www.google.com/search?q=${product.upc}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              color: theme.palette.primary.main,
+              textDecoration: "none",
+              fontSize: "12px",
+              fontWeight: 500,
+              background: "rgba(138, 180, 248, 0.12)",
+              padding: "4px 8px",
+              borderRadius: "4px",
+              border: `1px solid ${theme.palette.primary.main}40`,
+            }}
+          >
+            Google Search <OpenInNewIcon sx={{ fontSize: 14 }} />
+          </a>
+        </Box>
+
         {/* Top Section */}
         <Box
           sx={{
@@ -159,12 +192,15 @@ export default function VendorPopup({ product, close }) {
             </DialogContent>
           </Dialog>
 
-          <Box sx={{ textAlign: isMobile ? "center" : "left" }}>
+          <Box sx={{ textAlign: isMobile ? "center" : "left", pr: isMobile ? 0 : 14 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, fontSize: isMobile ? 16 : 18 }}>
               {product.title}
             </Typography>
-            <Typography sx={{ color: theme.palette.text.secondary, fontSize: isMobile ? 12 : 14 }}>
+            <Typography sx={{ color: theme.palette.text.secondary, fontSize: isMobile ? 12 : 14, mt: 0.5 }}>
               Brand: {product.brand} | Category: {product.category}
+            </Typography>
+            <Typography sx={{ color: theme.palette.text.secondary, fontSize: isMobile ? 12 : 14, mt: 0.5 }}>
+              UPC: <strong style={{ color: theme.palette.text.primary }}>{product.upc}</strong>
             </Typography>
             <Button
               variant="outlined"
