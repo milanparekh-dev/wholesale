@@ -417,7 +417,9 @@ export default function LoginPage() {
                   }}
                 >
                   <PhoneInput
-                    country="us"
+                    country="ca"
+                    onlyCountries={['ca']}
+                    disableDropdown={true}
                     value={forgotEmail}
                     onChange={setForgotEmail}
                     inputStyle={phoneStyle}

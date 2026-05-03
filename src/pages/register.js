@@ -294,7 +294,9 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 <PhoneInput
-                  country="us"
+                  country="ca"
+                  onlyCountries={['ca']}
+                  disableDropdown={true}
                   value={phone}
                   onChange={setPhone}
                   inputStyle={phoneStyle}
