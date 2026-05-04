@@ -412,7 +412,7 @@ export default function Home() {
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
-                      {["Price", "Product Name", "Action"].map((h) => (
+                      {["Price", "Product Name", "UPC", "Action"].map((h) => (
                         <TableCell
                           key={h}
                           sx={{
@@ -471,6 +471,16 @@ export default function Home() {
                                 Low Stock
                               </Typography>
                             )}
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              color: theme.palette.text.secondary,
+                              fontFamily: "monospace",
+                              fontSize: "0.8rem",
+                              padding: "4px 12px",
+                            }}
+                          >
+                            {product.upc || "—"}
                           </TableCell>
                           <TableCell sx={{ padding: "4px 12px" }}>
                             <Button
