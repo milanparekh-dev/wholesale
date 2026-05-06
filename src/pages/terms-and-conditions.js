@@ -108,6 +108,20 @@ export default function TermsAndConditions() {
             </Typography>
             
             <Typography variant="body1" paragraph>
+
+
+
+
+
+
+
+
+
+
+
+
+
+              
               Beauté Leville reserves the right to adjust pricing at any time without notice.
             </Typography>
             

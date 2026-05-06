@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box,
   Button,
@@ -21,6 +21,9 @@ import {
   DialogActions,
   DialogTitle,
   useTheme,
+  LinearProgress,
+  Typography,
+  Chip,
 } from "@mui/material";
 
 import adminApi from "/src/utility/adminApi";
@@ -51,6 +54,9 @@ export default function Home() {
   const [importPopup, setImportPopup] = useState(false);
   const [importFile, setImportFile] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState(null);
+  const [importId, setImportId] = useState(null);
+  const pollRef = useRef(null);
   const theme = useTheme();
 
   const fetchCategoryList = async () => {
@@ -176,6 +182,38 @@ export default function Home() {
     reloadProducts();
   };
 
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  const startProgressPolling = (id) => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(async () => {
+      try {
+        const res = await adminApi.get(
+          `/api/admin/products/import-progress/${id}`,
+        );
+        const data = res?.data;
+        if (data) {
+          setImportProgress(data);
+          if (data.status === "completed" || data.status === "failed") {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+            setImporting(false);
+            if (data.status === "completed") {
+              fetchProducts();
+            }
+          }
+        }
+      } catch {
+        // silently ignore polling errors
+      }
+    }, 2000);
+  };
+
   const handleImportSubmit = async () => {
     if (!importFile) {
       toast.error("Please select an .xlsx file");
@@ -190,6 +228,7 @@ export default function Home() {
 
     try {
       setImporting(true);
+      setImportProgress(null);
       const formData = new FormData();
       formData.append("file", importFile);
 
@@ -201,16 +240,39 @@ export default function Home() {
         },
       );
 
-      toast.success(res?.data?.message || "Import submitted");
-      setImportPopup(false);
-      setImportFile(null);
-      setPage(1);
-      fetchProducts();
+      const newImportId = res?.data?.import_id;
+      if (newImportId) {
+        setImportId(newImportId);
+        setImportProgress({
+          status: "queued",
+          total: 0,
+          processed: 0,
+          inserted: 0,
+          updated: 0,
+          failed: 0,
+        });
+        startProgressPolling(newImportId);
+        toast.info("Import started! Tracking progress...");
+      } else {
+        toast.success(res?.data?.message || "Import submitted");
+        setImportPopup(false);
+        setImportFile(null);
+        setImporting(false);
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || "Import failed");
-    } finally {
       setImporting(false);
     }
+  };
+
+  const handleCloseImportPopup = () => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = null;
+    setImportPopup(false);
+    setImportFile(null);
+    setImporting(false);
+    setImportProgress(null);
+    setImportId(null);
   };
 
   const cardBg = {
@@ -538,12 +600,13 @@ export default function Home() {
 
         <Dialog
           open={importPopup}
-          onClose={() => {
-            setImportPopup(false);
-            setImportFile(null);
-          }}
+          onClose={handleCloseImportPopup}
+          maxWidth="sm"
+          fullWidth
         >
-          <DialogTitle>Import products from Excel</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 600 }}>
+            Import products from Excel
+          </DialogTitle>
           <DialogContent
             sx={{
               display: "flex",
@@ -552,65 +615,281 @@ export default function Home() {
               minWidth: 340,
             }}
           >
-            <Box
-              sx={{
-                p: 2,
-                border: `1px dashed ${theme.palette.divider}`,
-                borderRadius: 4,
-                background: theme.palette.background.subtle,
-              }}
-            >
-              <input
-                type="file"
-                accept=".xlsx"
-                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
-                style={{ width: "100%" }}
-              />
+            {/* FILE UPLOAD SECTION */}
+            {!importProgress && (
+              <>
+                <Box
+                  sx={{
+                    p: 2,
+                    border: `1px dashed ${theme.palette.divider}`,
+                    borderRadius: 2,
+                    background: theme.palette.background.subtle,
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept=".xlsx"
+                    onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                    style={{ width: "100%" }}
+                  />
+                  <Box
+                    sx={{
+                      mt: 1,
+                      color: theme.palette.text.secondary,
+                      fontSize: 14,
+                    }}
+                  >
+                    Only .xlsx files are allowed. Please use the NYPX_clean.xlsx
+                    format; validation is handled by the backend.
+                  </Box>
+                  {importFile && (
+                    <Box sx={{ mt: 1, fontSize: 14 }}>
+                      Selected: {importFile.name}
+                    </Box>
+                  )}
+                </Box>
+                <Button
+                  variant="outlined"
+                  startIcon={<CloudDownloadIcon />}
+                  component="a"
+                  href="/xlsx/NYPX_clean.xlsx"
+                  download
+                  sx={{ textTransform: "none", alignSelf: "flex-start" }}
+                >
+                  Download sample (NYPX_clean.xlsx)
+                </Button>
+              </>
+            )}
+
+            {/* PROGRESS TRACKING SECTION */}
+            {importProgress && (
               <Box
                 sx={{
-                  mt: 1,
-                  color: theme.palette.text.secondary,
-                  fontSize: 14,
+                  p: 2.5,
+                  borderRadius: 2,
+                  background: theme.palette.background.subtle,
+                  border: `1px solid ${theme.palette.divider}`,
                 }}
               >
-                Only .xlsx files are allowed. Please use the NYPX_clean.xlsx
-                format; validation is handled by the backend.
-              </Box>
-              {importFile && (
-                <Box sx={{ mt: 1, fontSize: 14 }}>
-                  Selected: {importFile.name}
+                {/* Status Badge */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                  <Chip
+                    label={
+                      importProgress.status === "queued"
+                        ? "Queued"
+                        : importProgress.status === "parsing"
+                        ? "Parsing Excel..."
+                        : importProgress.status === "processing"
+                        ? "Processing Products..."
+                        : importProgress.status === "completed"
+                        ? "Completed"
+                        : "Failed"
+                    }
+                    size="small"
+                    sx={{
+                      fontWeight: 600,
+                      backgroundColor:
+                        importProgress.status === "completed"
+                          ? "#1b5e20"
+                          : importProgress.status === "failed"
+                          ? "#b71c1c"
+                          : "#0d47a1",
+                      color: "#fff",
+                    }}
+                  />
+                  {importProgress.status !== "completed" &&
+                    importProgress.status !== "failed" && (
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "50%",
+                          backgroundColor: "#4caf50",
+                          animation: "pulse 1.2s infinite",
+                          "@keyframes pulse": {
+                            "0%": { opacity: 1, transform: "scale(1)" },
+                            "50%": { opacity: 0.4, transform: "scale(1.3)" },
+                            "100%": { opacity: 1, transform: "scale(1)" },
+                          },
+                        }}
+                      />
+                    )}
                 </Box>
-              )}
-            </Box>
-            <Button
-              variant="outlined"
-              startIcon={<CloudDownloadIcon />}
-              component="a"
-              href="/xlsx/NYPX_clean.xlsx"
-              download
-              sx={{ textTransform: "none", alignSelf: "flex-start" }}
-            >
-              Download sample (NYPX_clean.xlsx)
-            </Button>
+
+                {/* Progress Bar */}
+                {importProgress.total > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 0.5,
+                      }}
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        {importProgress.processed} / {importProgress.total} products
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        {importProgress.total > 0
+                          ? Math.round(
+                              (importProgress.processed / importProgress.total) * 100,
+                            )
+                          : 0}
+                        %
+                      </Typography>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={
+                        importProgress.total > 0
+                          ? (importProgress.processed / importProgress.total) * 100
+                          : 0
+                      }
+                      sx={{
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: "rgba(255,255,255,0.08)",
+                        "& .MuiLinearProgress-bar": {
+                          borderRadius: 5,
+                          background:
+                            importProgress.status === "completed"
+                              ? "linear-gradient(90deg, #43a047, #66bb6a)"
+                              : importProgress.status === "failed"
+                              ? "linear-gradient(90deg, #e53935, #ef5350)"
+                              : "linear-gradient(90deg, #1976d2, #42a5f5)",
+                        },
+                      }}
+                    />
+                  </Box>
+                )}
+
+                {/* Parsing / Queued state with indeterminate bar */}
+                {(importProgress.status === "queued" ||
+                  importProgress.status === "parsing") && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                      {importProgress.status === "queued"
+                        ? "Waiting for background worker..."
+                        : "Reading and parsing Excel file..."}
+                    </Typography>
+                    <LinearProgress
+                      sx={{
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: "rgba(255,255,255,0.08)",
+                        "& .MuiLinearProgress-bar": {
+                          borderRadius: 5,
+                          background: "linear-gradient(90deg, #1976d2, #42a5f5)",
+                        },
+                      }}
+                    />
+                  </Box>
+                )}
+
+                {/* Stats Counters */}
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: 1.5,
+                    mt: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      p: 1.5,
+                      borderRadius: 2,
+                      background: "rgba(76, 175, 80, 0.1)",
+                      border: "1px solid rgba(76, 175, 80, 0.3)",
+                    }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{ fontWeight: 700, color: "#66bb6a" }}
+                    >
+                      {importProgress.inserted}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Inserted
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      p: 1.5,
+                      borderRadius: 2,
+                      background: "rgba(33, 150, 243, 0.1)",
+                      border: "1px solid rgba(33, 150, 243, 0.3)",
+                    }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{ fontWeight: 700, color: "#42a5f5" }}
+                    >
+                      {importProgress.updated}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Updated
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      p: 1.5,
+                      borderRadius: 2,
+                      background: "rgba(244, 67, 54, 0.1)",
+                      border: "1px solid rgba(244, 67, 54, 0.3)",
+                    }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{ fontWeight: 700, color: "#ef5350" }}
+                    >
+                      {importProgress.failed}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Failed
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Error message */}
+                {importProgress.status === "failed" && importProgress.error && (
+                  <Box
+                    sx={{
+                      mt: 2,
+                      p: 1.5,
+                      borderRadius: 1,
+                      background: "rgba(244, 67, 54, 0.08)",
+                      border: "1px solid rgba(244, 67, 54, 0.3)",
+                      color: "#ef5350",
+                      fontSize: 13,
+                    }}
+                  >
+                    Error: {importProgress.error}
+                  </Box>
+                )}
+              </Box>
+            )}
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button
-              onClick={() => {
-                setImportPopup(false);
-                setImportFile(null);
-              }}
+              onClick={handleCloseImportPopup}
               sx={{ textTransform: "none" }}
             >
-              Cancel
+              {importProgress?.status === "completed" ? "Done" : "Cancel"}
             </Button>
-            <Button
-              variant="contained"
-              onClick={handleImportSubmit}
-              disabled={importing}
-              sx={{ textTransform: "none" }}
-            >
-              {importing ? "Uploading..." : "Upload"}
-            </Button>
+            {!importProgress && (
+              <Button
+                variant="contained"
+                onClick={handleImportSubmit}
+                disabled={importing}
+                sx={{ textTransform: "none" }}
+              >
+                {importing ? "Uploading..." : "Upload"}
+              </Button>
+            )}
           </DialogActions>
         </Dialog>
 
